@@ -17,8 +17,9 @@ Optimize your energy consumption and battery storage by automatically identifyin
 - [Configuration](#configuration)
   - [Initial Setup](#initial-setup)
 - [Dashboard Installation](#dashboard-installation)
-  - [Method 1: Automatic Installation](#method-1-automatic-installation-recommended)
-  - [Method 2: Manual Installation](#method-2-manual-installation)
+  - [Getting the Dashboard File](#getting-the-dashboard-file)
+  - [Installation Steps](#installation-steps)
+  - [Required Frontend Components](#required-frontend-components)
 - [How It Works](#how-it-works)
   - [Window Selection Algorithm](#window-selection-algorithm)
   - [Entities Created](#entities-created)
@@ -107,39 +108,31 @@ During the configuration flow, you'll be asked to:
 
 ## Dashboard Installation
 
-The integration includes a comprehensive pre-built dashboard for monitoring and controlling all features. The dashboard YAML file is located in your installation at:
+The integration includes a comprehensive pre-built dashboard for monitoring and controlling all features. You need to manually install this dashboard using the YAML configuration file.
 
-**Path**: `/config/custom_components/cheapest_energy_windows/main_dashboard.yaml`
+### Getting the Dashboard File
 
-### Method 1: Automatic Installation (Recommended)
+**Option 1: From your local installation**
+- Path: `/config/custom_components/cheapest_energy_windows/main_dashboard.yaml`
 
-After setting up the integration:
+**Option 2: Download directly**
+- Direct link: [main_dashboard.yaml](https://github.com/cew-hacs/cheapest_energy_windows/blob/main/custom_components/cheapest_energy_windows/main_dashboard.yaml)
 
-1. Go to **Developer Tools > Actions**
-2. Search for `cheapest_energy_windows.install_dashboard`
-3. Choose dashboard type:
-   - **CEW Control Dashboard**: Full control interface for the integration
-   - **Energy Monitoring Dashboard**: General energy monitoring
-4. Click "Perform Action"
-5. Access your new dashboard from the sidebar
+### Installation Steps
 
-### Method 2: Manual Installation
-
-If you want to customize the dashboard before installing:
-
-1. **Download the dashboard file**:
-   - Direct link: [main_dashboard.yaml](https://github.com/cew-hacs/cheapest_energy_windows/blob/main/custom_components/cheapest_energy_windows/main_dashboard.yaml)
-   - Or access it locally at `/config/custom_components/cheapest_energy_windows/main_dashboard.yaml`
-
-2. **Install in Home Assistant**:
+1. **Create a new dashboard**:
    - Go to **Settings > Dashboards**
    - Click **+ Add Dashboard** (bottom right)
    - Choose **New dashboard from scratch**
-   - Give it a name (e.g., "Energy Windows")
-   - Click the **⋮** menu on the new dashboard
+   - Give it a name (e.g., "Energy Windows" or "CEW Control")
+   - Click **Create**
+
+2. **Add the YAML configuration**:
+   - Click the **⋮** menu (three dots) on your new dashboard
    - Select **Edit Dashboard**
    - Click **⋮** menu again and select **Raw configuration editor**
-   - Copy the contents of `main_dashboard.yaml` and paste it
+   - Copy the entire contents of `main_dashboard.yaml`
+   - Paste it into the editor (replacing any existing content)
    - Click **Save**
 
 3. **Refresh your browser** to ensure all template changes are loaded
@@ -220,12 +213,10 @@ The integration creates 64 configuration entities:
 ### cheapest_energy_windows.rotate_settings
 Apply tomorrow's settings to today. Automatically triggered at midnight when enabled.
 
-### cheapest_energy_windows.install_dashboard
-Install pre-configured dashboards to your Lovelace interface.
-
-Parameters:
-- `dashboard_name`: Name for the dashboard (optional)
-- `dashboard_type`: "cew" or "energy" (optional)
+This service can be manually called if you want to:
+- Force an immediate settings rotation
+- Test the settings rotation functionality
+- Reset today's settings to match tomorrow's configuration
 
 ## Automation System
 
