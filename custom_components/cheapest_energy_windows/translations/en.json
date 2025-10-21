@@ -1,0 +1,165 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Cheapest Energy Windows Setup",
+        "description": "Welcome to Cheapest Energy Windows!\n\nThis integration helps you optimize energy costs by finding the cheapest times to charge and most expensive times to discharge your battery system.\n\nHow would you like to proceed?",
+        "data": {
+          "setup_type": "Setup Type"
+        },
+        "data_description": {
+          "setup_type": "Choose between guided setup with configuration options or quick setup using defaults"
+        }
+      },
+      "price_sensor": {
+        "title": "Select Price Sensor",
+        "description": "{info}",
+        "data": {
+          "price_sensor": "Price Sensor"
+        },
+        "data_description": {
+          "price_sensor": "The sensor must have 'raw_today' attribute with hourly/15-minute price data"
+        }
+      },
+      "costs": {
+        "title": "Configure Cost Parameters",
+        "description": "Set up your electricity cost parameters.",
+        "data": {
+          "vat_rate": "VAT Rate",
+          "tax": "Tax per kWh (EUR)",
+          "additional_cost": "Additional Cost per kWh (EUR)"
+        },
+        "data_description": {
+          "vat_rate": "VAT rate as decimal (e.g., 0.21 for 21%)",
+          "tax": "Fixed tax amount per kWh in EUR",
+          "additional_cost": "Additional costs per kWh in EUR (grid fees, etc.)"
+        }
+      },
+      "power": {
+        "title": "Configure Battery Power",
+        "description": "Set your battery charging and discharging power.\n\n{charge_help}\n{discharge_help}\n{rte_help}\n\n{note}",
+        "data": {
+          "charge_power": "Charge Power (W)",
+          "discharge_power": "Discharge Power (W)",
+          "battery_rte": "Battery RTE (%)"
+        },
+        "data_description": {
+          "charge_power": "Battery charging power in Watts (800W is typical for single battery)",
+          "discharge_power": "Battery discharging power in Watts (used for calculating kWh)",
+          "battery_rte": "Round-trip efficiency 50-100% (85% typical, accounts for conversion losses)"
+        }
+      },
+      "pricing_windows": {
+        "title": "Configure Pricing Windows",
+        "description": "{info}",
+        "data": {
+          "pricing_window_duration": "Window Duration",
+          "charging_windows": "Charging Windows (how many cheapest time slots)",
+          "expensive_windows": "Discharge Windows (how many most expensive slots)",
+          "cheap_percentile": "Cheap Percentile % (1-50, lower = stricter)",
+          "expensive_percentile": "Expensive Percentile % (1-50, lower = stricter)",
+          "min_spread": "Min Spread Charge % (price difference needed)",
+          "min_spread_discharge": "Min Spread Discharge % (price difference needed)",
+          "aggressive_discharge_spread": "Aggressive Spread % (for peak discharge)",
+          "min_price_difference": "Min Price Difference (EUR/kWh, optional)"
+        },
+        "data_description": {
+          "pricing_window_duration": "Match this to your energy contract (15-min or hourly pricing)",
+          "charging_windows": "How many cheapest time windows to use for charging (1-96)",
+          "expensive_windows": "How many most expensive windows to use for discharging (0-96)",
+          "cheap_percentile": "Percentile threshold for identifying cheap prices (1-50%)",
+          "expensive_percentile": "Percentile threshold for identifying expensive prices (1-50%)",
+          "min_spread": "Minimum price spread % required to activate charging (0-200%)",
+          "min_spread_discharge": "Minimum spread % required for normal discharge (0-200%)",
+          "aggressive_discharge_spread": "Spread % required for aggressive peak discharge (0-300%)",
+          "min_price_difference": "Absolute minimum price difference in EUR/kWh to activate charging (0-0.5)"
+        }
+      },
+      "battery": {
+        "title": "Battery System Configuration (Optional)",
+        "description": "{info}",
+        "data": {
+          "battery_system_name": "Battery System Name",
+          "battery_soc_sensor": "State of Charge Sensor",
+          "battery_energy_sensor": "Available Energy Sensor",
+          "battery_charge_sensor": "Daily Charge Sensor",
+          "battery_discharge_sensor": "Daily Discharge Sensor",
+          "battery_power_sensor": "Current Power Sensor"
+        },
+        "data_description": {
+          "battery_system_name": "Friendly name for your battery system (leave empty to skip)",
+          "battery_soc_sensor": "Sensor showing current battery charge % (0-100). Example: sensor.battery_soc",
+          "battery_energy_sensor": "Sensor showing available battery capacity in kWh. Example: sensor.battery_available_energy",
+          "battery_charge_sensor": "Sensor tracking total energy charged today in kWh (must reset daily)",
+          "battery_discharge_sensor": "Sensor tracking total energy discharged today in kWh (must reset daily)",
+          "battery_power_sensor": "Sensor showing current battery power in W (positive=charging, negative=discharging)"
+        }
+      },
+      "automation": {
+        "title": "Battery Control Automation",
+        "description": "{info}",
+        "data": {}
+      },
+      "confirm": {
+        "title": "Confirm Configuration",
+        "description": "{summary}",
+        "data": {}
+      },
+      "dashboard": {
+        "title": "Dashboard Installation",
+        "description": "{info}",
+        "data": {}
+      }
+    },
+    "error": {
+      "invalid_price_sensor": "The selected price sensor is invalid or missing required attributes",
+      "automation_creation_failed": "Failed to create automation. You can create it manually after setup.",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "Cheapest Energy Windows is already configured",
+      "cannot_connect": "Failed to connect to price sensor"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Cheapest Energy Windows Options",
+        "description": "Adjust the configuration for Cheapest Energy Windows",
+        "data": {
+          "price_sensor": "Price Sensor",
+          "vat_rate": "VAT Rate",
+          "tax": "Tax per kWh (EUR)",
+          "additional_cost": "Additional Cost per kWh (EUR)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "cew_today": {
+        "name": "CEW Today",
+        "state": {
+          "charge": "Charge",
+          "discharge": "Discharge",
+          "discharge_aggressive": "Peak Discharge",
+          "idle": "Idle",
+          "off": "Off"
+        }
+      },
+      "cew_tomorrow": {
+        "name": "CEW Tomorrow",
+        "state": {
+          "available": "Available",
+          "unavailable": "Unavailable"
+        }
+      }
+    }
+  },
+  "services": {
+    "rotate_settings": {
+      "name": "Rotate Tomorrow Settings",
+      "description": "Apply tomorrow's settings to today (usually done automatically at midnight)"
+    }
+  }
+}

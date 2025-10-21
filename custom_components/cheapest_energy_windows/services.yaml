@@ -1,0 +1,6 @@
+# Services for Cheapest Energy Windows
+
+rotate_tomorrow_settings:
+  name: Rotate Tomorrow Settings
+  description: Apply tomorrow's settings to today. This is usually done automatically at midnight but can be triggered manually.
+  fields: {}

@@ -1,0 +1,342 @@
+###############################################################################
+# Cheapest Energy Windows - Battery Control Automation Template
+#
+# This automation triggers on CEW state changes and allows you to control
+# your battery system based on detected charging/discharging windows.
+#
+# To use this automation:
+# 1. This file will be automatically created during setup if you choose to
+# 2. Or manually: Copy this content to Configuration → Automations → Create
+# 3. Add your battery control actions in each sequence section
+#
+# Note: This template has no default actions - you must configure your
+# battery control commands based on your specific battery system.
+###############################################################################
+
+alias: CEW - Battery Control Automation
+description: Control your home battery based on Cheapest Energy Windows calculations
+mode: queued
+max: 10
+
+trigger:
+  - platform: state
+    entity_id: sensor.cew_today
+    to: charge
+    from:
+    - discharge
+    - discharge_aggressive
+    - idle
+    - 'off'
+    id: charge_start
+  - platform: state
+    entity_id: sensor.cew_today
+    to: discharge
+    from:
+    - charge
+    - discharge_aggressive
+    - idle
+    - 'off'
+    id: discharge_start
+  - platform: state
+    entity_id: sensor.cew_today
+    to: discharge_aggressive
+    from:
+    - charge
+    - discharge
+    - idle
+    - 'off'
+    id: discharge_aggressive_start
+  - platform: state
+    entity_id: sensor.cew_today
+    to: idle
+    from:
+    - charge
+    - discharge
+    - discharge_aggressive
+    - 'off'
+    id: idle_start
+  - platform: state
+    entity_id: sensor.cew_today
+    to: 'off'
+    from:
+    - charge
+    - discharge
+    - discharge_aggressive
+    - idle
+    id: automation_disabled
+
+# Filter out transitions from 'unavailable' state (happens during config changes/reloads)
+condition:
+  - condition: template
+    value_template: '{{ trigger.from_state.state != ''unavailable'' }}'
+
+action:
+  - choose:
+      #########################################################################
+      # CHARGE State - Cheap energy window detected
+      #########################################################################
+      - conditions:
+          - condition: trigger
+            id: charge_start
+        sequence:
+          # Send notification if enabled
+          - condition: and
+            conditions:
+              - condition: state
+                entity_id: switch.cew_notifications_enabled
+                state: 'on'
+              - condition: state
+                entity_id: switch.cew_notify_charging
+                state: 'on'
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity_id: switch.cew_quiet_hours_enabled
+                    state: 'off'
+                  - condition: template
+                    value_template: >-
+                      {% set now_time = now().strftime('%H:%M') %}
+                      {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                      {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                      {{ now_time < quiet_start or now_time >= quiet_end }}
+          - service: notify.notify
+            data:
+              title: "🔋 CEW: Charging Mode Started"
+              message: >-
+                Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
+
+                Avg cheap price: €{{ state_attr('sensor.cew_today', 'avg_cheap_price') | float(0) | round(5) }}/kWh
+
+                Charge power: {{ states('number.cew_charge_power') }}W
+
+                Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+
+          # ADD YOUR BATTERY CHARGE ACTIONS HERE
+          # Examples:
+          # - service: switch.turn_on
+          #   target:
+          #     entity_id: switch.your_battery_charge_mode
+          # - service: number.set_value
+          #   target:
+          #     entity_id: number.your_battery_charge_power
+          #   data:
+          #     value: "{{ states('number.cew_charge_power') }}"
+
+      #########################################################################
+      # DISCHARGE State - Expensive energy window detected
+      #########################################################################
+      - conditions:
+          - condition: trigger
+            id: discharge_start
+        sequence:
+          # Send notification if enabled
+          - condition: and
+            conditions:
+              - condition: state
+                entity_id: switch.cew_notifications_enabled
+                state: 'on'
+              - condition: state
+                entity_id: switch.cew_notify_discharge
+                state: 'on'
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity_id: switch.cew_quiet_hours_enabled
+                    state: 'off'
+                  - condition: template
+                    value_template: >-
+                      {% set now_time = now().strftime('%H:%M') %}
+                      {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                      {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                      {{ now_time < quiet_start or now_time >= quiet_end }}
+          - service: notify.notify
+            data:
+              title: "⚡ CEW: Discharge Mode Started"
+              message: >-
+                Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
+
+                Avg expensive price: €{{ state_attr('sensor.cew_today', 'avg_expensive_price') | float(0) | round(5) }}/kWh
+
+                Discharge power: {{ states('number.cew_discharge_power') }}W
+
+                Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+
+          # ADD YOUR BATTERY DISCHARGE ACTIONS HERE
+          # Examples:
+          # - service: switch.turn_on
+          #   target:
+          #     entity_id: switch.your_battery_discharge_mode
+          # - service: number.set_value
+          #   target:
+          #     entity_id: number.your_battery_discharge_power
+          #   data:
+          #     value: "{{ states('number.cew_discharge_power') }}"
+
+      #########################################################################
+      # AGGRESSIVE DISCHARGE State - Peak price period detected
+      #########################################################################
+      - conditions:
+          - condition: trigger
+            id: discharge_aggressive_start
+        sequence:
+          # Send notification if enabled
+          - condition: and
+            conditions:
+              - condition: state
+                entity_id: switch.cew_notifications_enabled
+                state: 'on'
+              - condition: state
+                entity_id: switch.cew_notify_discharge_aggressive
+                state: 'on'
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity_id: switch.cew_quiet_hours_enabled
+                    state: 'off'
+                  - condition: template
+                    value_template: >-
+                      {% set now_time = now().strftime('%H:%M') %}
+                      {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                      {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                      {{ now_time < quiet_start or now_time >= quiet_end }}
+          - service: notify.notify
+            data:
+              title: "🚨 CEW: Aggressive Discharge Started"
+              message: >-
+                Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
+
+                Avg expensive price: €{{ state_attr('sensor.cew_today', 'avg_expensive_price') | float(0) | round(5) }}/kWh
+
+                Max discharge power: {{ states('number.cew_discharge_power') }}W
+
+                Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+
+          # ADD YOUR BATTERY AGGRESSIVE DISCHARGE ACTIONS HERE
+          # Examples:
+          # - service: number.set_value
+          #   target:
+          #     entity_id: number.your_battery_discharge_power
+          #   data:
+          #     value: "{{ states('number.cew_discharge_power') }}"
+
+      #########################################################################
+      # IDLE State - No charge or discharge window active
+      #########################################################################
+      - conditions:
+          - condition: trigger
+            id: idle_start
+        sequence:
+          # Send notification if enabled
+          - condition: and
+            conditions:
+              - condition: state
+                entity_id: switch.cew_notifications_enabled
+                state: 'on'
+              - condition: state
+                entity_id: switch.cew_notify_idle
+                state: 'on'
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity_id: switch.cew_quiet_hours_enabled
+                    state: 'off'
+                  - condition: template
+                    value_template: >-
+                      {% set now_time = now().strftime('%H:%M') %}
+                      {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                      {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                      {{ now_time < quiet_start or now_time >= quiet_end }}
+          - service: notify.notify
+            data:
+              title: "💤 CEW: Normal/idle Mode Started"
+              message: >-
+                Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
+
+                Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+
+          # ADD YOUR BATTERY IDLE/STANDBY ACTIONS HERE
+          # Examples:
+          # - service: switch.turn_off
+          #   target:
+          #     entity_id: switch.your_battery_charge_mode
+          # - service: switch.turn_off
+          #   target:
+          #     entity_id: switch.your_battery_discharge_mode
+
+      #########################################################################
+      # OFF State - CEW automation disabled
+      #########################################################################
+      - conditions:
+          - condition: trigger
+            id: automation_disabled
+        sequence:
+          # Send notification if enabled
+          - condition: and
+            conditions:
+              - condition: state
+                entity_id: switch.cew_notifications_enabled
+                state: 'on'
+              - condition: state
+                entity_id: switch.cew_notify_automation_disabled
+                state: 'on'
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity_id: switch.cew_quiet_hours_enabled
+                    state: 'off'
+                  - condition: template
+                    value_template: >-
+                      {% set now_time = now().strftime('%H:%M') %}
+                      {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                      {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                      {{ now_time < quiet_start or now_time >= quiet_end }}
+          - service: notify.notify
+            data:
+              title: "⛔ CEW: Automation Disabled"
+              message: >-
+                CEW automation has been turned off.
+
+          # ADD YOUR BATTERY MANUAL MODE ACTIONS HERE (optional)
+          # Examples:
+          # - service: switch.turn_off
+          #   target:
+          #     entity_id: switch.your_battery_auto_mode
+
+    default: []
+
+###############################################################################
+# CUSTOMIZATION GUIDE:
+#
+# 1. Add quiet hours condition (optional):
+#    Add this to the top-level 'condition:' section:
+#    - condition: template
+#      after: "07:00:00"
+#      before: "22:00:00"
+#
+# 2. Add battery SOC check (if you have battery sensors):
+#    Add this to specific sequences (e.g., charge_start):
+#    - condition: numeric_state
+#      entity_id: sensor.your_battery_soc
+#      below: 95  # Don't charge if battery is already full
+#
+# 3. Add notifications (optional):
+#    - service: notify.mobile_app_your_phone
+#      data:
+#        title: "Battery Status"
+#        message: "Current price: €{{ state_attr('sensor.cew_today', 'current_price') | round(5) }}/kWh"
+#
+# 4. Connect to your battery system:
+#    Replace the example actions with service calls specific to your battery:
+#    - Zendure: Use zendure_solarflow integration services
+#    - Tesla Powerwall: Use tesla_custom integration services
+#    - SolarEdge: Use solaredge_modbus integration services
+#    - Generic MQTT: Use mqtt.publish service
+#
+# 5. Use CEW sensor attributes in your actions:
+#    - Current price: {{ state_attr('sensor.cew_today', 'current_price') }}
+#    - Charge power: {{ states('number.cew_charge_power') }}
+#    - Discharge power: {{ states('number.cew_discharge_power') }}
+#    - Spread: {{ state_attr('sensor.cew_today', 'spread_avg') }}
+#    - Window times: {{ state_attr('sensor.cew_today', 'cheapest_times') }}
+#
+###############################################################################
