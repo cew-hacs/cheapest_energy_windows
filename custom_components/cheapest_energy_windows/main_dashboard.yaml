@@ -496,8 +496,7 @@ views:
                       {% set discharged_kwh = num_expensive * window_duration *
                       discharge_power %}
 
-                      {% set actual_discharged = [discharged_kwh, usable_kwh] |
-                      min %}
+                      {% set actual_discharged = discharged_kwh %}
 
                       {% set charge_cost = charged_kwh * avg_cheap %}
 
@@ -554,8 +553,7 @@ views:
                       {% set discharged_kwh = num_expensive * window_duration *
                       discharge_power %}
 
-                      {% set actual_discharged = [discharged_kwh, usable_kwh] |
-                      min %}
+                      {% set actual_discharged = discharged_kwh %}
 
                       {% set charge_cost = charged_kwh * avg_cheap %}
 
@@ -1213,8 +1211,7 @@ views:
                       {% set discharged_kwh = num_expensive * window_duration *
                       discharge_power %}
 
-                      {% set actual_discharged = [discharged_kwh, usable_kwh] |
-                      min %}
+                      {% set actual_discharged = discharged_kwh %}
 
                       {% set charge_cost = charged_kwh * avg_cheap %}
 
@@ -1261,8 +1258,7 @@ views:
                       {% set discharged_kwh = num_expensive * window_duration *
                       discharge_power %}
 
-                      {% set actual_discharged = [discharged_kwh, usable_kwh] |
-                      min %}
+                      {% set actual_discharged = discharged_kwh %}
 
                       {% set charge_cost = charged_kwh * avg_cheap %}
 
@@ -1929,8 +1925,7 @@ views:
                   0.25 %}{% set charged_kwh = num_cheap * window_duration *
                   charge_power %}{% set usable_kwh = charged_kwh * rte %}{% set
                   discharged_kwh = num_expensive * window_duration *
-                  discharge_power %}{% set actual_discharged = [discharged_kwh,
-                  usable_kwh] | min %}{% set net_kwh = usable_kwh -
+                  discharge_power %}{% set actual_discharged = discharged_kwh %}{% set net_kwh = usable_kwh -
                   actual_discharged %}{{ net_kwh | round(2) }} kWh
                 icon: mdi:battery-heart
                 tap_action:
@@ -2004,12 +1999,12 @@ views:
                   charge_power %}{% set usable_kwh = charged_kwh * rte %}{% if
                   num_expensive > 0 %}{% set discharged_kwh = num_expensive *
                   window_duration * discharge_power %}{% set actual_discharged =
-                  [discharged_kwh, usable_kwh] | min %}{% set charge_cost =
+                  discharged_kwh %}{% set charge_cost =
                   charged_kwh * avg_cheap %}{% set discharge_revenue =
                   actual_discharged * avg_expensive %}{% set net_cost =
                   charge_cost - discharge_revenue %}{% set net_kwh = usable_kwh
                   - actual_discharged %}{% set net_price = (net_cost / net_kwh)
-                  if net_kwh > 0 else 0 %}{% elif num_cheap > 0 %}{% set
+                  if net_kwh != 0 else (avg_expensive - avg_cheap) %}{% elif num_cheap > 0 %}{% set
                   net_price = avg_cheap / rte %}{% else %}{% set net_price = 0
                   %}{% endif %}€{{ net_price | round(3) }}/kWh
                 icon: mdi:currency-eur
@@ -2097,8 +2092,7 @@ views:
                   0.25 %}{% set charged_kwh = num_cheap * window_duration *
                   charge_power %}{% set usable_kwh = charged_kwh * rte %}{% set
                   discharged_kwh = num_expensive * window_duration *
-                  discharge_power %}{% set actual_discharged = [discharged_kwh,
-                  usable_kwh] | min %}{% set net_kwh = usable_kwh -
+                  discharge_power %}{% set actual_discharged = discharged_kwh %}{% set net_kwh = usable_kwh -
                   actual_discharged %}{{ net_kwh | round(2) }} kWh
                 icon: mdi:battery-heart
                 tap_action:
@@ -2172,12 +2166,12 @@ views:
                   charge_power %}{% set usable_kwh = charged_kwh * rte %}{% if
                   num_expensive > 0 %}{% set discharged_kwh = num_expensive *
                   window_duration * discharge_power %}{% set actual_discharged =
-                  [discharged_kwh, usable_kwh] | min %}{% set charge_cost =
+                  discharged_kwh %}{% set charge_cost =
                   charged_kwh * avg_cheap %}{% set discharge_revenue =
                   actual_discharged * avg_expensive %}{% set net_cost =
                   charge_cost - discharge_revenue %}{% set net_kwh = usable_kwh
                   - actual_discharged %}{% set net_price = (net_cost / net_kwh)
-                  if net_kwh > 0 else 0 %}{% elif num_cheap > 0 %}{% set
+                  if net_kwh != 0 else (avg_expensive - avg_cheap) %}{% elif num_cheap > 0 %}{% set
                   net_price = avg_cheap / rte %}{% else %}{% set net_price = 0
                   %}{% endif %}€{{ net_price | round(3) }}/kWh
                 icon: mdi:currency-eur

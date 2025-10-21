@@ -260,7 +260,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
                 vol.Required("charging_windows", default=DEFAULT_CHARGING_WINDOWS): selector.NumberSelector(
                     selector.NumberSelectorConfig(
-                        min=1,
+                        min=0,
                         max=96,
                         mode=selector.NumberSelectorMode.BOX,
                     )

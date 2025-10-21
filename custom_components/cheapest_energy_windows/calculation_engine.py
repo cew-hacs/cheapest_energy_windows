@@ -452,6 +452,11 @@ class WindowCalculationEngine:
             if len(selected) >= num_windows:
                 break
 
+            # If no charge windows, skip spread check and just select top expensive windows
+            if not charge_windows:
+                selected.append(candidate)
+                continue
+
             # Test spread with this window
             test_prices = [s["price"] for s in selected] + [candidate["price"]]
             expensive_avg = np.mean(test_prices)

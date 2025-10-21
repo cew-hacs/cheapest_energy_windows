@@ -50,7 +50,7 @@ async def async_setup_entry(
     numbers.extend([
         CEWNumber(
             hass, config_entry, "charging_windows", "Charging Windows",
-            1, 96, DEFAULT_CHARGING_WINDOWS, 1, "windows",
+            0, 96, DEFAULT_CHARGING_WINDOWS, 1, "windows",
             "mdi:window-open", NumberMode.BOX
         ),
         CEWNumber(
