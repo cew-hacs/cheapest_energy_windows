@@ -1,7 +1,7 @@
 {
   "domain": "cheapest_energy_windows",
   "name": "Cheapest Energy Windows",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "codeowners": ["@cew-hacs"],
   "config_flow": true,
   "dependencies": [],
