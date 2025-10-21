@@ -36,10 +36,10 @@ async def async_setup_entry(
 
     # Define all time entities
     time_configs = [
-        ("time_override_1_start", "Time Override Start", DEFAULT_TIME_OVERRIDE_START, "mdi:clock-start"),
-        ("time_override_1_end", "Time Override End", DEFAULT_TIME_OVERRIDE_END, "mdi:clock-end"),
-        ("time_override_1_start_tomorrow", "Time Override Start Tomorrow", DEFAULT_TIME_OVERRIDE_START, "mdi:clock-start"),
-        ("time_override_1_end_tomorrow", "Time Override End Tomorrow", DEFAULT_TIME_OVERRIDE_END, "mdi:clock-end"),
+        ("time_override_start", "Time Override Start", DEFAULT_TIME_OVERRIDE_START, "mdi:clock-start"),
+        ("time_override_end", "Time Override End", DEFAULT_TIME_OVERRIDE_END, "mdi:clock-end"),
+        ("time_override_start_tomorrow", "Time Override Start Tomorrow", DEFAULT_TIME_OVERRIDE_START, "mdi:clock-start"),
+        ("time_override_end_tomorrow", "Time Override End Tomorrow", DEFAULT_TIME_OVERRIDE_END, "mdi:clock-end"),
         ("calculation_window_start", "Calculation Window Start", DEFAULT_CALCULATION_WINDOW_START, "mdi:window-closed-variant"),
         ("calculation_window_end", "Calculation Window End", DEFAULT_CALCULATION_WINDOW_END, "mdi:window-closed-variant"),
         ("quiet_hours_start", "Quiet Hours Start", DEFAULT_QUIET_START, "mdi:volume-off"),

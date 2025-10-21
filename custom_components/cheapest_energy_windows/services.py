@@ -311,7 +311,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         # Rotate boolean settings
         boolean_settings = [
             ("price_override_enabled_tomorrow", "price_override_enabled"),
-            ("time_override_1_enabled_tomorrow", "time_override_1_enabled"),
+            ("time_override_enabled_tomorrow", "time_override_enabled"),
         ]
 
         for tomorrow_key, today_key in boolean_settings:
@@ -331,7 +331,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Rotate select settings
         select_settings = [
-            ("time_override_1_mode_tomorrow", "time_override_1_mode"),
+            ("time_override_mode_tomorrow", "time_override_mode"),
         ]
 
         for tomorrow_key, today_key in select_settings:
@@ -350,8 +350,8 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Rotate datetime settings
         datetime_settings = [
-            ("time_override_1_start_tomorrow", "time_override_1_start"),
-            ("time_override_1_end_tomorrow", "time_override_1_end"),
+            ("time_override_start_tomorrow", "time_override_start"),
+            ("time_override_end_tomorrow", "time_override_end"),
         ]
 
         for tomorrow_key, today_key in datetime_settings:

@@ -115,18 +115,10 @@ class AutomationHandler:
             "min_price_difference": "min_price_difference_tomorrow",
             "price_override_threshold": "price_override_threshold_tomorrow",
             "price_override_enabled": "price_override_enabled_tomorrow",
-            "time_override_1_enabled": "time_override_1_enabled_tomorrow",
-            "time_override_1_start": "time_override_1_start_tomorrow",
-            "time_override_1_end": "time_override_1_end_tomorrow",
-            "time_override_1_mode": "time_override_1_mode_tomorrow",
-            "time_override_2_enabled": "time_override_2_enabled_tomorrow",
-            "time_override_2_start": "time_override_2_start_tomorrow",
-            "time_override_2_end": "time_override_2_end_tomorrow",
-            "time_override_2_mode": "time_override_2_mode_tomorrow",
-            "time_override_3_enabled": "time_override_3_enabled_tomorrow",
-            "time_override_3_start": "time_override_3_start_tomorrow",
-            "time_override_3_end": "time_override_3_end_tomorrow",
-            "time_override_3_mode": "time_override_3_mode_tomorrow",
+            "time_override_enabled": "time_override_enabled_tomorrow",
+            "time_override_start": "time_override_start_tomorrow",
+            "time_override_end": "time_override_end_tomorrow",
+            "time_override_mode": "time_override_mode_tomorrow",
         }
 
         # Get config entry

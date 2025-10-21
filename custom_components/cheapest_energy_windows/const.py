@@ -143,10 +143,10 @@ CALCULATION_AFFECTING_KEYS: Final = {
     "price_override_threshold",
 
     # Time overrides
-    "time_override_1_enabled",
-    "time_override_1_start",
-    "time_override_1_end",
-    "time_override_1_mode",
+    "time_override_enabled",
+    "time_override_start",
+    "time_override_end",
+    "time_override_mode",
 
     # Calculation window (restrict price analysis to time range)
     "calculation_window_enabled",
@@ -165,10 +165,10 @@ CALCULATION_AFFECTING_KEYS: Final = {
     "min_price_difference_tomorrow",
     "price_override_enabled_tomorrow",
     "price_override_threshold_tomorrow",
-    "time_override_1_enabled_tomorrow",
-    "time_override_1_start_tomorrow",
-    "time_override_1_end_tomorrow",
-    "time_override_1_mode_tomorrow",
+    "time_override_enabled_tomorrow",
+    "time_override_start_tomorrow",
+    "time_override_end_tomorrow",
+    "time_override_mode_tomorrow",
 
     # Window duration
     "pricing_window_duration",

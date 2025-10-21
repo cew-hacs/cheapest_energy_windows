@@ -516,10 +516,10 @@ class WindowCalculationEngine:
         current_time = now.replace(second=0, microsecond=0)
 
         # Check time override
-        if config.get("time_override_1_enabled", False):
-            start_str = config.get("time_override_1_start", "")
-            end_str = config.get("time_override_1_end", "")
-            mode = config.get("time_override_1_mode", MODE_IDLE)
+        if config.get("time_override_enabled", False):
+            start_str = config.get("time_override_start", "")
+            end_str = config.get("time_override_end", "")
+            mode = config.get("time_override_mode", MODE_IDLE)
 
             if self._is_in_time_range(current_time, start_str, end_str):
                 return self._mode_to_state(mode)
@@ -621,14 +621,14 @@ class WindowCalculationEngine:
             Tuple of (actual_charge_windows, actual_discharge_windows)
         """
         # Check if time override is enabled
-        if not config.get("time_override_1_enabled", False):
+        if not config.get("time_override_enabled", False):
             # No override, return calculated windows as-is (don't combine normal + aggressive)
             return list(charge_windows), list(discharge_windows)
 
         # Get override configuration
-        override_start_str = config.get("time_override_1_start", "")
-        override_end_str = config.get("time_override_1_end", "")
-        override_mode = config.get("time_override_1_mode", MODE_IDLE)
+        override_start_str = config.get("time_override_start", "")
+        override_end_str = config.get("time_override_end", "")
+        override_mode = config.get("time_override_mode", MODE_IDLE)
 
         if not override_start_str or not override_end_str:
             # Invalid override config, return calculated windows
@@ -773,7 +773,7 @@ class WindowCalculationEngine:
             "price_override_active": config.get("price_override_enabled", False) and
                                     current_price and
                                     current_price <= config.get("price_override_threshold", 0.15),
-            "time_override_active": config.get("time_override_1_enabled", False),
+            "time_override_active": config.get("time_override_enabled", False),
             "automation_enabled": config.get("automation_enabled", True),
             "calculation_window_enabled": config.get("calculation_window_enabled", False),
         }

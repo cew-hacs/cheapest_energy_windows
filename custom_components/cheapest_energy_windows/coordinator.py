@@ -310,8 +310,8 @@ class CEWCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
             "quiet_hours_enabled": bool(options.get("quiet_hours_enabled", False)),
             "price_override_enabled": bool(options.get("price_override_enabled", False)),
             "price_override_enabled_tomorrow": bool(options.get("price_override_enabled_tomorrow", False)),
-            "time_override_1_enabled": bool(options.get("time_override_1_enabled", False)),
-            "time_override_1_enabled_tomorrow": bool(options.get("time_override_1_enabled_tomorrow", False)),
+            "time_override_enabled": bool(options.get("time_override_enabled", False)),
+            "time_override_enabled_tomorrow": bool(options.get("time_override_enabled_tomorrow", False)),
             "calculation_window_enabled": bool(options.get("calculation_window_enabled", False)),
             "notify_automation_disabled": bool(options.get("notify_automation_disabled", False)),
             "notify_charging": bool(options.get("notify_charging", True)),
@@ -321,14 +321,14 @@ class CEWCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
 
             # String values (selects)
             "pricing_window_duration": options.get("pricing_window_duration", "15_minutes"),
-            "time_override_1_mode": options.get("time_override_1_mode", "charge"),
-            "time_override_1_mode_tomorrow": options.get("time_override_1_mode_tomorrow", "charge"),
+            "time_override_mode": options.get("time_override_mode", "charge"),
+            "time_override_mode_tomorrow": options.get("time_override_mode_tomorrow", "charge"),
 
             # Time values
-            "time_override_1_start": options.get("time_override_1_start", DEFAULT_TIME_OVERRIDE_START),
-            "time_override_1_end": options.get("time_override_1_end", DEFAULT_TIME_OVERRIDE_END),
-            "time_override_1_start_tomorrow": options.get("time_override_1_start_tomorrow", DEFAULT_TIME_OVERRIDE_START),
-            "time_override_1_end_tomorrow": options.get("time_override_1_end_tomorrow", DEFAULT_TIME_OVERRIDE_END),
+            "time_override_start": options.get("time_override_start", DEFAULT_TIME_OVERRIDE_START),
+            "time_override_end": options.get("time_override_end", DEFAULT_TIME_OVERRIDE_END),
+            "time_override_start_tomorrow": options.get("time_override_start_tomorrow", DEFAULT_TIME_OVERRIDE_START),
+            "time_override_end_tomorrow": options.get("time_override_end_tomorrow", DEFAULT_TIME_OVERRIDE_END),
             "calculation_window_start": options.get("calculation_window_start", DEFAULT_CALCULATION_WINDOW_START),
             "calculation_window_end": options.get("calculation_window_end", DEFAULT_CALCULATION_WINDOW_END),
             "quiet_hours_start": options.get("quiet_hours_start", DEFAULT_QUIET_START),

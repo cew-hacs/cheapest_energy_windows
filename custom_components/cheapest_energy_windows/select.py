@@ -31,8 +31,8 @@ async def async_setup_entry(
     # Define all select entities
     select_configs = [
         ("pricing_window_duration", "Pricing Window Duration", ["15_minutes", "1_hour"], "15_minutes", "mdi:timer"),
-        ("time_override_1_mode", "Time Override Mode", ["charge", "discharge", "idle"], "charge", "mdi:toggle-switch"),
-        ("time_override_1_mode_tomorrow", "Time Override Mode Tomorrow", ["charge", "discharge", "idle"], "charge", "mdi:toggle-switch"),
+        ("time_override_mode", "Time Override Mode", ["charge", "discharge", "idle"], "charge", "mdi:toggle-switch"),
+        ("time_override_mode_tomorrow", "Time Override Mode Tomorrow", ["charge", "discharge", "idle"], "charge", "mdi:toggle-switch"),
     ]
 
     for key, name, options, default, icon in select_configs:
