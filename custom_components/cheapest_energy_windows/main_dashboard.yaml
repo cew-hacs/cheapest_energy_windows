@@ -183,10 +183,10 @@ views:
                       Date(t).getTime()));
 
                       const override1Enabled =
-                      hass.states['switch.cew_time_override_enabled']?.state
-                      === 'on'; const override1Start =
-                      hass.states['time.cew_time_override_start']?.state;
-                      const override1End =
+                      hass.states['switch.cew_time_override_enabled']?.state ===
+                      'on'; const override1Start =
+                      hass.states['time.cew_time_override_start']?.state; const
+                      override1End =
                       hass.states['time.cew_time_override_end']?.state; const
                       override1Mode =
                       hass.states['select.cew_time_override_mode']?.state;
@@ -861,13 +861,17 @@ views:
                         return '<div style="' + baseStyle + ' background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: #fff;"><div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">💡 Normal Period</div><div style="font-size: 12px; opacity: 0.9;">Smart meter mode</div></div>';
                       }
                   noData:
-                    text: "📅 Tomorrow's energy data will be available after 13:00 CET"
+                    text: >-
+                      📅 Tomorrow's energy data will be available after 13:00
+                      CET
                     align: center
                     verticalAlign: middle
                     style:
                       color: '#6b7280'
                       fontSize: 16px
-                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                      fontFamily: >-
+                        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                        sans-serif
                 series:
                   - entity: sensor.nordpool_kwh_nl_eur_3_10_0
                     name: Energy Periods
@@ -1051,13 +1055,15 @@ views:
                         colors:
                           - '#ffffff'
                   noData:
-                    text: "📅 Tomorrow's price data will be available after 13:00 CET"
+                    text: 📅 Tomorrow's price data will be available after 13:00 CET
                     align: center
                     verticalAlign: middle
                     style:
                       color: '#6b7280'
                       fontSize: 16px
-                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                      fontFamily: >-
+                        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                        sans-serif
                 series:
                   - entity: sensor.nordpool_kwh_nl_eur_3_10_0
                     name: Price
@@ -1117,8 +1123,8 @@ views:
                   - type: custom:mushroom-template-card
                     primary: Spread
                     secondary: >-
-                      {{ state_attr('sensor.cew_tomorrow', 'spread_avg') | float(0) |
-                      round(1) }}%
+                      {{ state_attr('sensor.cew_tomorrow', 'spread_avg') |
+                      float(0) | round(1) }}%
                     icon: mdi:percent
                     tap_action:
                       action: none
@@ -1138,14 +1144,13 @@ views:
                     primary: Charge
                     secondary: >-
                       {% set total = state_attr('sensor.cew_tomorrow',
-                      'cheapest_times') | default([]) | length
-                      %}0/{{ total }}
+                      'cheapest_times') | default([]) | length %}0/{{ total }}
                     icon: mdi:battery-charging
                     tap_action:
                       action: none
                     color: >
                       {% if state_attr('sensor.cew_tomorrow', 'cheapest_times')
-                      | length > 0 %}green
+                      | default([]) | length > 0 %}green
 
                       {% else %}grey
 
@@ -1156,15 +1161,13 @@ views:
                     primary: Discharge
                     secondary: >-
                       {% set total = state_attr('sensor.cew_tomorrow',
-                      'expensive_times') | default([]) | length
-                      %}0/{{ total }}
+                      'expensive_times') | default([]) | length %}0/{{ total }}
                     icon: mdi:battery-minus
                     tap_action:
                       action: none
                     color: >
                       {% set count = state_attr('sensor.cew_tomorrow',
-                      'expensive_times') | default([]) | length
-                      %}
+                      'expensive_times') | default([]) | length %}
 
                       {% if count > 0 %}orange
 
@@ -1177,12 +1180,10 @@ views:
                     primary: Daily Net Cost
                     secondary: >-
                       {% set num_cheap = state_attr('sensor.cew_tomorrow',
-                      'cheapest_times') | default([]) | length
-                      %}
+                      'cheapest_times') | default([]) | length %}
 
                       {% set num_expensive = state_attr('sensor.cew_tomorrow',
-                      'expensive_times') | default([]) | length
-                      %}
+                      'expensive_times') | default([]) | length %}
 
                       {% set avg_cheap = state_attr('sensor.cew_tomorrow',
                       'avg_cheap_price') | float(0) %}
@@ -1224,12 +1225,10 @@ views:
                     icon: mdi:currency-eur
                     icon_color: >
                       {% set num_cheap = state_attr('sensor.cew_tomorrow',
-                      'cheapest_times') | default([]) | length
-                      %}
+                      'cheapest_times') | default([]) | length %}
 
                       {% set num_expensive = state_attr('sensor.cew_tomorrow',
-                      'expensive_times') | default([]) | length
-                      %}
+                      'expensive_times') | default([]) | length %}
 
                       {% set avg_cheap = state_attr('sensor.cew_tomorrow',
                       'avg_cheap_price') | float(0) %}
@@ -1374,8 +1373,7 @@ views:
                     }
                 content: >-
                   **⚡ Charge Windows** ({{ state_attr('sensor.cew_tomorrow',
-                  'cheapest_times') | default([]) | length }}
-                  periods)
+                  'cheapest_times') | default([]) | length }} periods)
 
                   {% set sensorName = states('text.cew_price_sensor_entity') or
                   'sensor.nordpool_kwh_nl_eur_3_10_0' %} {% set nordpool =
@@ -1433,8 +1431,7 @@ views:
                   &nbsp;
 
                   **🔋 Discharge Windows** ({{ state_attr('sensor.cew_tomorrow',
-                  'expensive_times') | default([]) | length }}
-                  periods)
+                  'expensive_times') | default([]) | length }} periods)
 
                   {% set sensorName = states('text.cew_price_sensor_entity') or
                   'sensor.nordpool_kwh_nl_eur_3_10_0' %} {% set nordpool =
@@ -1925,8 +1922,9 @@ views:
                   0.25 %}{% set charged_kwh = num_cheap * window_duration *
                   charge_power %}{% set usable_kwh = charged_kwh * rte %}{% set
                   discharged_kwh = num_expensive * window_duration *
-                  discharge_power %}{% set actual_discharged = discharged_kwh %}{% set net_kwh = usable_kwh -
-                  actual_discharged %}{{ net_kwh | round(2) }} kWh
+                  discharge_power %}{% set actual_discharged = discharged_kwh
+                  %}{% set net_kwh = usable_kwh - actual_discharged %}{{ net_kwh
+                  | round(2) }} kWh
                 icon: mdi:battery-heart
                 tap_action:
                   action: none
@@ -1999,14 +1997,14 @@ views:
                   charge_power %}{% set usable_kwh = charged_kwh * rte %}{% if
                   num_expensive > 0 %}{% set discharged_kwh = num_expensive *
                   window_duration * discharge_power %}{% set actual_discharged =
-                  discharged_kwh %}{% set charge_cost =
-                  charged_kwh * avg_cheap %}{% set discharge_revenue =
-                  actual_discharged * avg_expensive %}{% set net_cost =
-                  charge_cost - discharge_revenue %}{% set net_kwh = usable_kwh
-                  - actual_discharged %}{% set net_price = (net_cost / net_kwh)
-                  if net_kwh != 0 else (avg_expensive - avg_cheap) %}{% elif num_cheap > 0 %}{% set
-                  net_price = avg_cheap / rte %}{% else %}{% set net_price = 0
-                  %}{% endif %}€{{ net_price | round(3) }}/kWh
+                  discharged_kwh %}{% set charge_cost = charged_kwh * avg_cheap
+                  %}{% set discharge_revenue = actual_discharged * avg_expensive
+                  %}{% set net_cost = charge_cost - discharge_revenue %}{% set
+                  net_kwh = usable_kwh - actual_discharged %}{% set net_price =
+                  (net_cost / (net_kwh | abs)) if net_kwh != 0 else (avg_expensive -
+                  avg_cheap) %}{% elif num_cheap > 0 %}{% set net_price =
+                  avg_cheap / rte %}{% else %}{% set net_price = 0 %}{% endif
+                  %}€{{ net_price | round(3) }}/kWh
                 icon: mdi:currency-eur
                 tap_action:
                   action: none
@@ -2022,9 +2020,9 @@ views:
                 primary: Planned Charging
                 secondary: >-
                   {% set num_cheap = state_attr('sensor.cew_tomorrow',
-                  'cheapest_times') | default([]) | length
-                  %}{% set charge_power = states('number.cew_charge_power') |
-                  float(0) / 1000 %}{% set window_duration = 1.0 if
+                  'cheapest_times') | default([]) | length %}{% set charge_power
+                  = states('number.cew_charge_power') | float(0) / 1000 %}{% set
+                  window_duration = 1.0 if
                   states('select.cew_pricing_window_duration') == '1_hour' else
                   0.25 %}{% set charged_kwh = num_cheap * window_duration *
                   charge_power %}{{ charged_kwh | round(2) }} kWh (0/{{
@@ -2039,12 +2037,11 @@ views:
                 primary: Usable Energy
                 secondary: >-
                   {% set num_cheap = state_attr('sensor.cew_tomorrow',
-                  'cheapest_times') | default([]) | length
-                  %}{% set charge_power = states('number.cew_charge_power') |
-                  float(0) / 1000 %}{% set rte =
-                  states('number.cew_battery_rte') | float(90) / 100 %}{% set
-                  rte_pct = states('number.cew_battery_rte') | float(90) %}{%
-                  set window_duration = 1.0 if
+                  'cheapest_times') | default([]) | length %}{% set charge_power
+                  = states('number.cew_charge_power') | float(0) / 1000 %}{% set
+                  rte = states('number.cew_battery_rte') | float(90) / 100 %}{%
+                  set rte_pct = states('number.cew_battery_rte') | float(90)
+                  %}{% set window_duration = 1.0 if
                   states('select.cew_pricing_window_duration') == '1_hour' else
                   0.25 %}{% set charged_kwh = num_cheap * window_duration *
                   charge_power %}{% set usable_charged_kwh = charged_kwh * rte
@@ -2062,10 +2059,9 @@ views:
                 primary: Planned Discharge
                 secondary: >-
                   {% set num_expensive = state_attr('sensor.cew_tomorrow',
-                  'expensive_times') | default([]) | length
-                  %}{% set discharge_power =
-                  states('number.cew_discharge_power') | float(0) / 1000 %}{%
-                  set window_duration = 1.0 if
+                  'expensive_times') | default([]) | length %}{% set
+                  discharge_power = states('number.cew_discharge_power') |
+                  float(0) / 1000 %}{% set window_duration = 1.0 if
                   states('select.cew_pricing_window_duration') == '1_hour' else
                   0.25 %}{% set discharged_kwh = num_expensive * window_duration
                   * discharge_power %}{{ discharged_kwh | round(2) }} kWh (0/{{
@@ -2080,11 +2076,11 @@ views:
                 primary: Net kWh Available
                 secondary: >-
                   {% set num_cheap = state_attr('sensor.cew_tomorrow',
-                  'cheapest_times') | default([]) | length
-                  %}{% set num_expensive = state_attr('sensor.cew_tomorrow',
-                  'expensive_times') | default([]) | length
-                  %}{% set charge_power = states('number.cew_charge_power') |
-                  float(0) / 1000 %}{% set discharge_power =
+                  'cheapest_times') | default([]) | length %}{% set
+                  num_expensive = state_attr('sensor.cew_tomorrow',
+                  'expensive_times') | default([]) | length %}{% set
+                  charge_power = states('number.cew_charge_power') | float(0) /
+                  1000 %}{% set discharge_power =
                   states('number.cew_discharge_power') | float(0) / 1000 %}{%
                   set rte = states('number.cew_battery_rte') | float(90) / 100
                   %}{% set window_duration = 1.0 if
@@ -2092,8 +2088,9 @@ views:
                   0.25 %}{% set charged_kwh = num_cheap * window_duration *
                   charge_power %}{% set usable_kwh = charged_kwh * rte %}{% set
                   discharged_kwh = num_expensive * window_duration *
-                  discharge_power %}{% set actual_discharged = discharged_kwh %}{% set net_kwh = usable_kwh -
-                  actual_discharged %}{{ net_kwh | round(2) }} kWh
+                  discharge_power %}{% set actual_discharged = discharged_kwh
+                  %}{% set net_kwh = usable_kwh - actual_discharged %}{{ net_kwh
+                  | round(2) }} kWh
                 icon: mdi:battery-heart
                 tap_action:
                   action: none
@@ -2166,21 +2163,21 @@ views:
                   charge_power %}{% set usable_kwh = charged_kwh * rte %}{% if
                   num_expensive > 0 %}{% set discharged_kwh = num_expensive *
                   window_duration * discharge_power %}{% set actual_discharged =
-                  discharged_kwh %}{% set charge_cost =
-                  charged_kwh * avg_cheap %}{% set discharge_revenue =
-                  actual_discharged * avg_expensive %}{% set net_cost =
-                  charge_cost - discharge_revenue %}{% set net_kwh = usable_kwh
-                  - actual_discharged %}{% set net_price = (net_cost / net_kwh)
-                  if net_kwh != 0 else (avg_expensive - avg_cheap) %}{% elif num_cheap > 0 %}{% set
-                  net_price = avg_cheap / rte %}{% else %}{% set net_price = 0
-                  %}{% endif %}€{{ net_price | round(3) }}/kWh
+                  discharged_kwh %}{% set charge_cost = charged_kwh * avg_cheap
+                  %}{% set discharge_revenue = actual_discharged * avg_expensive
+                  %}{% set net_cost = charge_cost - discharge_revenue %}{% set
+                  net_kwh = usable_kwh - actual_discharged %}{% set net_price =
+                  (net_cost / (net_kwh | abs)) if net_kwh != 0 else (avg_expensive -
+                  avg_cheap) %}{% elif num_cheap > 0 %}{% set net_price =
+                  avg_cheap / rte %}{% else %}{% set net_price = 0 %}{% endif
+                  %}€{{ net_price | round(3) }}/kWh
                 icon: mdi:currency-eur
                 tap_action:
                   action: none
                 color: >-
                   {% set num_cheap = state_attr('sensor.cew_tomorrow',
-                  'cheapest_times') | default([]) | length
-                  %}{% if num_cheap > 0 %}green{% else %}grey{% endif %}
+                  'cheapest_times') | default([]) | length %}{% if num_cheap > 0
+                  %}green{% else %}grey{% endif %}
                 features_position: bottom
               - type: custom:mushroom-chips-card
                 alignment: center
@@ -2190,5 +2187,5 @@ views:
                     content: Buy me a coffee
                     tap_action:
                       action: url
-                      url_path: https://www.buymeacoffee.com/cheapest_energy_windows
+                      url_path: https://www.buymeacoffee.com/masterant
                     icon_color: orange
