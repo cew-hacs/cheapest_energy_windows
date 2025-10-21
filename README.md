@@ -1,10 +1,21 @@
 # Cheapest Energy Windows for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![GitHub Release](https://img.shields.io/github/release/yourusername/cheapest_energy_windows.svg)](https://github.com/yourusername/cheapest_energy_windows/releases)
+[![GitHub Release](https://img.shields.io/github/release/cew-hacs/cheapest_energy_windows.svg)](https://github.com/cew-hacs/cheapest_energy_windows/releases)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Optimize your energy consumption and battery storage by automatically identifying the cheapest charging windows and most expensive discharging periods based on dynamic electricity prices.
+Optimize your energy consumption and battery storage by automatically identifying the cheapest charging windows and most expensive discharging periods based on dynamic electricity prices from Nord Pool.
+
+## Dashboard Preview
+
+![Cheapest Energy Windows Dashboard](CEW-Dashboard.jpg)
+
+## Supported Price Sensors
+
+This integration is designed to work with **Nord Pool** dynamic electricity pricing. It requires a Nord Pool price sensor integration such as:
+- [Nordpool](https://github.com/custom-components/nordpool) - Provides hourly electricity prices for Nordic and Baltic countries
+
+While primarily designed for Nord Pool data structure, it may work with other dynamic pricing sensors that provide hourly price data in a similar format (ENTSO-E, Tibber with modifications).
 
 ## Features
 
@@ -53,7 +64,7 @@ During the configuration flow, you'll be asked to:
    - Guided Setup (recommended for new users)
    - Quick Setup (for advanced users)
 
-2. **Select your electricity price sensor**: The integration will auto-discover compatible price sensors (e.g., Nordpool, ENTSO-E, Tibber)
+2. **Select your Nord Pool price sensor**: The integration will auto-discover Nord Pool price sensors in your Home Assistant instance
 
 3. **Configure pricing parameters**:
    - VAT percentage
@@ -273,7 +284,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 For issues, questions, or suggestions:
-- Open an issue on [GitHub](https://github.com/yourusername/cheapest_energy_windows/issues)
+- Open an issue on [GitHub](https://github.com/cew-hacs/cheapest_energy_windows/issues)
 - Join the discussion on [Home Assistant Community](https://community.home-assistant.io/)
 
 ## Changelog
