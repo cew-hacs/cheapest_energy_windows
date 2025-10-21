@@ -623,13 +623,13 @@ views:
                       label: ⏰ Time Override (Force Action During Period)
                     padding: 5
                     entities:
-                      - entity: switch.cew_time_override_1_enabled
+                      - entity: switch.cew_time_override_enabled
                         name: Enable Time Override
-                      - entity: time.cew_time_override_1_start
+                      - entity: time.cew_time_override_start
                         name: Start Time
-                      - entity: time.cew_time_override_1_end
+                      - entity: time.cew_time_override_end
                         name: End Time
-                      - entity: select.cew_time_override_1_mode
+                      - entity: select.cew_time_override_mode
                         name: Override Mode
                   - type: custom:fold-entity-row
                     head:
