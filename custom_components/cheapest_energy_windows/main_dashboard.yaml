@@ -2187,5 +2187,5 @@ views:
                     content: Buy me a coffee
                     tap_action:
                       action: url
-                      url_path: https://www.buymeacoffee.com/masterant
+                      url_path: https://www.buymeacoffee.com/cheapest_energy_windows
                     icon_color: orange
