@@ -6,9 +6,38 @@
 
 Optimize your energy consumption and battery storage by automatically identifying the cheapest charging windows and most expensive discharging periods based on dynamic electricity prices from Nord Pool.
 
+## Table of Contents
+
+- [Dashboard Preview](#dashboard-preview)
+- [Supported Price Sensors](#supported-price-sensors)
+- [Features](#features)
+- [Installation](#installation)
+  - [HACS Installation](#hacs-installation-recommended)
+  - [Manual Installation](#manual-installation)
+- [Configuration](#configuration)
+  - [Initial Setup](#initial-setup)
+- [Dashboard Installation](#dashboard-installation)
+  - [Method 1: Automatic Installation](#method-1-automatic-installation-recommended)
+  - [Method 2: Manual Installation](#method-2-manual-installation)
+- [How It Works](#how-it-works)
+  - [Window Selection Algorithm](#window-selection-algorithm)
+  - [Entities Created](#entities-created)
+- [Services](#services)
+- [Automation System](#automation-system)
+  - [How Automations Work](#how-automations-work)
+  - [Initial Setup: Notification-Only Mode](#initial-setup-notification-only-mode)
+  - [Adding Battery Control Actions](#adding-battery-control-actions)
+- [Sensor Attributes](#sensor-attributes)
+- [Dashboard Features](#dashboard-features)
+- [Troubleshooting](#troubleshooting)
+- [Performance](#performance)
+- [Contributing](#contributing)
+- [License](#license)
+- [Support](#support)
+
 ## Dashboard Preview
 
-![Cheapest Energy Windows Dashboard](CEW-Dashboard.jpg)
+![Cheapest Energy Windows Dashboard](CEW-Dashboard.jpg?v=2)
 
 ## Supported Price Sensors
 
@@ -76,17 +105,57 @@ During the configuration flow, you'll be asked to:
    - Discharge power (Watts)
    - Round-trip efficiency (%)
 
-### Dashboard Installation
+## Dashboard Installation
 
-After setting up the integration, install the dashboard:
+The integration includes a comprehensive pre-built dashboard for monitoring and controlling all features. The dashboard YAML file is located in your installation at:
 
-1. Go to Developer Tools > Actions
+**Path**: `/config/custom_components/cheapest_energy_windows/main_dashboard.yaml`
+
+### Method 1: Automatic Installation (Recommended)
+
+After setting up the integration:
+
+1. Go to **Developer Tools > Actions**
 2. Search for `cheapest_energy_windows.install_dashboard`
 3. Choose dashboard type:
    - **CEW Control Dashboard**: Full control interface for the integration
    - **Energy Monitoring Dashboard**: General energy monitoring
 4. Click "Perform Action"
 5. Access your new dashboard from the sidebar
+
+### Method 2: Manual Installation
+
+If you want to customize the dashboard before installing:
+
+1. **Download the dashboard file**:
+   - Direct link: [main_dashboard.yaml](https://github.com/cew-hacs/cheapest_energy_windows/blob/main/custom_components/cheapest_energy_windows/main_dashboard.yaml)
+   - Or access it locally at `/config/custom_components/cheapest_energy_windows/main_dashboard.yaml`
+
+2. **Install in Home Assistant**:
+   - Go to **Settings > Dashboards**
+   - Click **+ Add Dashboard** (bottom right)
+   - Choose **New dashboard from scratch**
+   - Give it a name (e.g., "Energy Windows")
+   - Click the **⋮** menu on the new dashboard
+   - Select **Edit Dashboard**
+   - Click **⋮** menu again and select **Raw configuration editor**
+   - Copy the contents of `main_dashboard.yaml` and paste it
+   - Click **Save**
+
+3. **Refresh your browser** to ensure all template changes are loaded
+
+### Required Frontend Components
+
+The dashboard requires the following custom cards to be installed via HACS:
+
+1. **[Mushroom Cards](https://github.com/piitaya/lovelace-mushroom)** - Modern card designs
+2. **[fold-entity-row](https://github.com/thomasloven/lovelace-fold-entity-row)** - Collapsible entity rows
+3. **[ApexCharts Card](https://github.com/RomRider/apexcharts-card)** - Advanced chart rendering
+
+To install these:
+- Go to **HACS > Frontend**
+- Search for each card name
+- Click **Download** and restart Home Assistant
 
 ## How It Works
 
@@ -158,49 +227,216 @@ Parameters:
 - `dashboard_name`: Name for the dashboard (optional)
 - `dashboard_type`: "cew" or "energy" (optional)
 
-## Automation Examples
+## Automation System
 
-### React to State Changes
+### How Automations Work
+
+The integration automatically creates **state-based automations** for you during setup. These automations monitor the `sensor.cew_today` state and trigger actions when the state changes between:
+
+- **charge** - Battery should charge during cheap energy windows
+- **discharge** - Battery should discharge during expensive energy windows
+- **discharge_aggressive** - Battery should discharge aggressively during peak prices
+- **idle** - Battery should remain idle (no action)
+- **off** - Automation is disabled
+
+### Initial Setup: Notification-Only Mode
+
+**By default**, the integration sets up **notification automations** that alert you when states change. This is a safe starting point that lets you:
+
+✓ Understand how the system works
+✓ Verify the window selections are correct
+✓ See state changes in real-time
+✗ Does NOT control your battery automatically
+
+### Adding Battery Control Actions
+
+To automate your battery, you need to **customize the automations** with your specific battery control actions:
+
+#### Step 1: Find Your Battery Control Entities
+
+First, identify the entities that control your battery:
+- Battery charge switch/number (e.g., `switch.battery_charge`, `number.battery_charge_power`)
+- Battery discharge switch/number (e.g., `switch.battery_discharge`, `number.battery_discharge_power`)
+- Battery mode select (e.g., `select.battery_mode`)
+
+#### Step 2: Edit the Automations
+
+1. Go to **Settings > Automations & Scenes**
+2. Find the automations created by CEW (look for "CEW" or "Cheapest Energy Windows" prefix)
+3. Click on each automation to edit it
+4. Add your battery control actions to the corresponding states
+
+#### Step 3: Automation Examples
+
+**Example 1: Simple Switch Control**
 
 ```yaml
 automation:
-  - alias: "Battery Charge on Cheap Energy"
+  - alias: "CEW Battery Charge"
+    description: "Start battery charging during cheap energy windows"
     trigger:
       - platform: state
         entity_id: sensor.cew_today
         to: 'charge'
     action:
+      # Your battery charge action here
       - service: switch.turn_on
         target:
           entity_id: switch.battery_charge
+      # Optional: Set charge power
+      - service: number.set_value
+        target:
+          entity_id: number.battery_charge_power
+        data:
+          value: 2400  # Watts
+      # Optional: Send notification
+      - service: notify.mobile_app
+        data:
+          title: "Battery Charging"
+          message: "Starting charge at €{{ state_attr('sensor.cew_today', 'avg_cheap_price') }}/kWh"
 
-  - alias: "Battery Discharge on Expensive Energy"
+  - alias: "CEW Battery Discharge"
+    description: "Start battery discharging during expensive energy windows"
     trigger:
       - platform: state
         entity_id: sensor.cew_today
         to: 'discharge'
     action:
+      # Your battery discharge action here
       - service: switch.turn_on
         target:
           entity_id: switch.battery_discharge
+      # Optional: Set discharge power
+      - service: number.set_value
+        target:
+          entity_id: number.battery_discharge_power
+        data:
+          value: 2400  # Watts
+
+  - alias: "CEW Battery Idle"
+    description: "Stop battery activity during idle periods"
+    trigger:
+      - platform: state
+        entity_id: sensor.cew_today
+        to: 'idle'
+    action:
+      # Stop all battery activity
+      - service: switch.turn_off
+        target:
+          entity_id:
+            - switch.battery_charge
+            - switch.battery_discharge
 ```
 
-### Use Window Attributes
+**Example 2: Mode-Based Control (Huawei, SolarEdge, etc.)**
 
 ```yaml
 automation:
-  - alias: "Notify Charging Windows"
+  - alias: "CEW Battery Mode Control"
+    description: "Control battery mode based on CEW state"
+    trigger:
+      - platform: state
+        entity_id: sensor.cew_today
+    action:
+      - choose:
+          # Charge mode
+          - conditions:
+              - condition: state
+                entity_id: sensor.cew_today
+                state: 'charge'
+            sequence:
+              - service: select.select_option
+                target:
+                  entity_id: select.battery_working_mode
+                data:
+                  option: "Time of Use"
+              - service: number.set_value
+                target:
+                  entity_id: number.battery_charge_power
+                data:
+                  value: 2400
+
+          # Discharge mode
+          - conditions:
+              - condition: state
+                entity_id: sensor.cew_today
+                state: 'discharge'
+            sequence:
+              - service: select.select_option
+                target:
+                  entity_id: select.battery_working_mode
+                data:
+                  option: "Maximise Self Consumption"
+
+          # Idle mode
+          - conditions:
+              - condition: state
+                entity_id: sensor.cew_today
+                state: 'idle'
+            sequence:
+              - service: select.select_option
+                target:
+                  entity_id: select.battery_working_mode
+                data:
+                  option: "Fully Fed To Grid"
+```
+
+**Example 3: Advanced - Using Time Overrides**
+
+```yaml
+automation:
+  - alias: "CEW Force Charge Override"
+    description: "Force charging during override period"
+    trigger:
+      - platform: state
+        entity_id: input_boolean.cew_time_override_charge_enabled
+        to: 'on'
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.battery_charge
+      - service: notify.mobile_app
+        data:
+          title: "Battery Override Active"
+          message: "Forcing charge until {{ states('input_datetime.cew_time_override_charge_end') }}"
+```
+
+### Using Window Attributes in Automations
+
+You can access detailed window information in your automations:
+
+```yaml
+automation:
+  - alias: "Morning Energy Report"
     trigger:
       - platform: time
         at: "07:00:00"
     action:
       - service: notify.mobile_app
         data:
-          title: "Today's Charging Windows"
+          title: "Today's Energy Windows"
           message: >
-            Charging windows: {{ state_attr('sensor.cew_today', 'cheapest_times') | join(', ') }}
-            Average price: €{{ state_attr('sensor.cew_today', 'avg_cheap_price') | round(5) }}/kWh
+            Charging at: {{ state_attr('sensor.cew_today', 'cheapest_times') | join(', ') }}
+            Avg charge price: €{{ state_attr('sensor.cew_today', 'avg_cheap_price') | round(3) }}/kWh
+
+            Discharging at: {{ state_attr('sensor.cew_today', 'expensive_times') | join(', ') }}
+            Avg discharge price: €{{ state_attr('sensor.cew_today', 'avg_expensive_price') | round(3) }}/kWh
+
+            Spread: {{ state_attr('sensor.cew_today', 'spread_percentage') }}%
+            Net profit potential: €{{ (state_attr('sensor.cew_today', 'avg_expensive_price') - state_attr('sensor.cew_today', 'avg_cheap_price')) | round(3) }}/kWh
 ```
+
+### Important Notes
+
+⚠️ **Safety First**: Always test your battery control automations carefully:
+- Start with low power values
+- Monitor the first few cycles manually
+- Ensure your battery BMS has proper protections
+- Check that charge/discharge commands work correctly
+
+💡 **Customization**: Every battery system is different. The examples above are templates - you MUST adapt them to your specific battery controller's entities and requirements.
+
+🔔 **Notifications**: Keep notification actions even after adding battery control - they help you monitor that everything is working as expected.
 
 ## Sensor Attributes
 
