@@ -45,10 +45,17 @@ Optimize your energy consumption and battery storage by automatically identifyin
 This integration is designed to work with **Nord Pool** dynamic electricity pricing. It requires a Nord Pool price sensor integration such as:
 - [Nordpool](https://github.com/custom-components/nordpool) - Provides hourly electricity prices for Nordic and Baltic countries
 
+The integration supports **flexible time granularity**:
+- **15-minute windows** (96 windows per day) - Uses quarter-hourly pricing data from Nord Pool for precise optimization
+- **1-hour windows** (24 windows per day) - Aggregates to hourly averages for simpler management
+
+Choose the window duration that matches your energy contract and trading resolution. Many modern dynamic pricing contracts support 15-minute settlements, allowing for more granular optimization opportunities.
+
 While primarily designed for Nord Pool data structure, it may work with other dynamic pricing sensors that provide hourly price data in a similar format (ENTSO-E, Tibber with modifications).
 
 ## Features
 
+- **Flexible Window Duration**: Choose between 15-minute (96 windows/day) or 1-hour (24 windows/day) intervals to match your energy contract
 - **Smart Window Detection**: Automatically identifies optimal charge/discharge windows based on electricity prices
 - **Percentile-Based Selection**: Uses statistical analysis to find truly cheap and expensive periods
 - **Progressive Window Selection**: Ensures spread requirements are met for profitability
@@ -96,15 +103,23 @@ During the configuration flow, you'll be asked to:
 
 2. **Select your Nord Pool price sensor**: The integration will auto-discover Nord Pool price sensors in your Home Assistant instance
 
-3. **Configure pricing parameters**:
+3. **Choose window duration**:
+   - **15 minutes** (96 windows per day) - Recommended if your energy contract supports quarter-hourly trading/settlement
+   - **1 hour** (24 windows per day) - Simpler management, suitable for hourly contracts
+
+   > **Tip**: Most Nord Pool data includes 15-minute granularity. Choose 15-minute windows for maximum optimization flexibility, or 1-hour windows for simpler scheduling.
+
+4. **Configure pricing parameters**:
    - VAT percentage
    - Additional tax (€/kWh)
    - Fixed additional costs (€/kWh)
 
-4. **Battery settings** (optional):
+5. **Battery settings** (optional):
    - Charge power (Watts)
    - Discharge power (Watts)
    - Round-trip efficiency (%)
+
+You can change the window duration anytime after setup using the `Pricing Window Duration` selector in the dashboard or entity settings.
 
 ## Dashboard Installation
 
@@ -154,24 +169,30 @@ To install these:
 
 ### Window Selection Algorithm
 
-1. **Percentile Filtering**:
-   - Identifies the cheapest X% of hours for charging
-   - Identifies the most expensive Y% of hours for discharging
+The algorithm operates on either **15-minute or 1-hour intervals** depending on your configuration:
 
-2. **Progressive Selection**:
+1. **Data Processing**:
+   - **15-minute mode**: Uses Nord Pool's quarter-hourly data directly (96 data points per day)
+   - **1-hour mode**: Aggregates four 15-minute periods into hourly averages (24 data points per day)
+
+2. **Percentile Filtering**:
+   - Identifies the cheapest X% of windows for charging
+   - Identifies the most expensive Y% of windows for discharging
+
+3. **Progressive Selection**:
    - Starts with most extreme prices
    - Adds windows while maintaining minimum spread requirements
    - Ensures profitability considering round-trip efficiency
 
-3. **Spread Calculation**:
+4. **Spread Calculation**:
    ```
    Spread = ((expensive_price - cheap_price) / cheap_price) * 100
    ```
 
-4. **State Determination**:
-   - **Charge**: Current hour is in cheap windows and spread requirement met
-   - **Discharge**: Current hour is in expensive windows and spread requirement met
-   - **Discharge Aggressive**: Current hour meets aggressive discharge spread
+5. **State Determination**:
+   - **Charge**: Current window is in cheap windows and spread requirement met
+   - **Discharge**: Current window is in expensive windows and spread requirement met
+   - **Discharge Aggressive**: Current window meets aggressive discharge spread
    - **Idle**: No conditions met
    - **Off**: Automation disabled
 
