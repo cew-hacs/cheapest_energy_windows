@@ -249,8 +249,6 @@ class CEWTodaySensor(CEWBaseSensor):
 
         if calc_config_changed:
             _LOGGER.info(f"Calculation config changed, forcing recalculation")
-            # Invalidate cache to ensure fresh calculation
-            self._calculation_engine.invalidate_cache()
 
         if scheduled_update:
             _LOGGER.debug("Scheduled update - recalculating for time-based state changes")
@@ -408,8 +406,6 @@ class CEWTomorrowSensor(CEWBaseSensor):
 
         if calc_config_changed:
             _LOGGER.info(f"Tomorrow: Calculation config changed, forcing recalculation")
-            # Invalidate cache to ensure fresh calculation
-            self._calculation_engine.invalidate_cache()
 
         if scheduled_update:
             _LOGGER.debug("Tomorrow: Scheduled update - recalculating for time-based state changes")

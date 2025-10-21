@@ -183,13 +183,13 @@ views:
                       Date(t).getTime()));
 
                       const override1Enabled =
-                      hass.states['switch.cew_time_override_enabled']?.state
+                      hass.states['switch.cew_time_override_1_enabled']?.state
                       === 'on'; const override1Start =
-                      hass.states['time.cew_time_override_start']?.state;
+                      hass.states['time.cew_time_override_1_start']?.state;
                       const override1End =
-                      hass.states['time.cew_time_override_end']?.state; const
+                      hass.states['time.cew_time_override_1_end']?.state; const
                       override1Mode =
-                      hass.states['select.cew_time_override_mode']?.state;
+                      hass.states['select.cew_time_override_1_mode']?.state;
 
                       function isInTimeRange(timeMs, startTime, endTime) {
                         const date = new Date(timeMs);
@@ -623,13 +623,13 @@ views:
                       label: ⏰ Time Override (Force Action During Period)
                     padding: 5
                     entities:
-                      - entity: switch.cew_time_override_enabled
+                      - entity: switch.cew_time_override_1_enabled
                         name: Enable Time Override
-                      - entity: time.cew_time_override_start
+                      - entity: time.cew_time_override_1_start
                         name: Start Time
-                      - entity: time.cew_time_override_end
+                      - entity: time.cew_time_override_1_end
                         name: End Time
-                      - entity: select.cew_time_override_mode
+                      - entity: select.cew_time_override_1_mode
                         name: Override Mode
                   - type: custom:fold-entity-row
                     head:
@@ -905,13 +905,13 @@ views:
                       Date(t).getTime()));
 
                       const override1Enabled =
-                      hass.states['switch.cew_time_override_enabled_tomorrow']?.state
+                      hass.states['switch.cew_time_override_1_enabled_tomorrow']?.state
                       === 'on'; const override1Start =
-                      hass.states['time.cew_time_override_start_tomorrow']?.state;
+                      hass.states['time.cew_time_override_1_start_tomorrow']?.state;
                       const override1End =
-                      hass.states['time.cew_time_override_end_tomorrow']?.state;
+                      hass.states['time.cew_time_override_1_end_tomorrow']?.state;
                       const override1Mode =
-                      hass.states['select.cew_time_override_mode_tomorrow']?.state;
+                      hass.states['select.cew_time_override_1_mode_tomorrow']?.state;
 
                       function isInTimeRange(timeMs, startTime, endTime) {
                         const date = new Date(timeMs);
@@ -1348,13 +1348,13 @@ views:
                       label: ⏰ Time Override (Force Action During Period)
                     padding: 5
                     entities:
-                      - entity: switch.cew_time_override_enabled_tomorrow
+                      - entity: switch.cew_time_override_1_enabled_tomorrow
                         name: Enable Time Override
-                      - entity: time.cew_time_override_start_tomorrow
+                      - entity: time.cew_time_override_1_start_tomorrow
                         name: Start Time
-                      - entity: time.cew_time_override_end_tomorrow
+                      - entity: time.cew_time_override_1_end_tomorrow
                         name: End Time
-                      - entity: select.cew_time_override_mode_tomorrow
+                      - entity: select.cew_time_override_1_mode_tomorrow
                         name: Override Mode
                   - type: custom:fold-entity-row
                     head:

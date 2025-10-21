@@ -31,11 +31,7 @@ class WindowCalculationEngine:
 
     def __init__(self) -> None:
         """Initialize the calculation engine."""
-        self._cache: Dict[str, Any] = {}
-        self._cache_timestamp: Optional[datetime] = None
-        # Reduced cache duration to 30 seconds to allow time-based state changes
-        # Cache still helps avoid redundant calculations during rapid config changes
-        self._cache_duration = timedelta(seconds=30)
+        pass
 
     def calculate_windows(
         self,
@@ -59,23 +55,6 @@ class WindowCalculationEngine:
         _LOGGER.warning(f"calculation_window_enabled in config: {config.get('calculation_window_enabled', 'NOT PRESENT')}")
         _LOGGER.warning(f"calculation_window_start: {config.get('calculation_window_start', 'NOT PRESENT')}")
         _LOGGER.warning(f"calculation_window_end: {config.get('calculation_window_end', 'NOT PRESENT')}")
-
-        # Check cache validity
-        cache_key = f"{'tomorrow' if is_tomorrow else 'today'}"
-
-        # Force recalculation if calculation window settings differ from cached
-        calc_window_enabled = config.get("calculation_window_enabled", False)
-        if cache_key in self._cache:
-            cached_calc_window = self._cache[cache_key].get("calculation_window_enabled", False)
-            if cached_calc_window != calc_window_enabled:
-                _LOGGER.warning(f"Calculation window setting changed ({cached_calc_window} -> {calc_window_enabled}), invalidating cache")
-                self.invalidate_cache()
-
-        if self._is_cache_valid(cache_key):
-            _LOGGER.warning("Returning cached result")
-            return self._cache[cache_key]
-
-        _LOGGER.warning("Cache miss - performing calculation")
 
         # Get configuration values
         pricing_mode = config.get("pricing_window_duration", PRICING_15_MINUTES)
@@ -177,10 +156,6 @@ class WindowCalculationEngine:
             config,
             is_tomorrow
         )
-
-        # Update cache
-        self._cache[cache_key] = result
-        self._cache_timestamp = datetime.now()
 
         return result
 
@@ -839,16 +814,3 @@ class WindowCalculationEngine:
             "automation_enabled": False,
             "calculation_window_enabled": False,
         }
-
-    def _is_cache_valid(self, cache_key: str) -> bool:
-        """Check if cache is still valid."""
-        if cache_key not in self._cache or not self._cache_timestamp:
-            return False
-
-        age = datetime.now() - self._cache_timestamp
-        return age < self._cache_duration
-
-    def invalidate_cache(self) -> None:
-        """Invalidate the cache."""
-        self._cache.clear()
-        self._cache_timestamp = None

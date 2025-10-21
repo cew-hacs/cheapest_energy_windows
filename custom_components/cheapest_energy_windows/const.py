@@ -49,8 +49,7 @@ DEFAULT_CALCULATION_WINDOW_START: Final = "00:00:00"
 DEFAULT_CALCULATION_WINDOW_END: Final = "23:59:59"
 
 # Update intervals
-UPDATE_INTERVAL: Final = timedelta(minutes=15)
-CACHE_DURATION: Final = timedelta(minutes=14, seconds=59)
+UPDATE_INTERVAL: Final = timedelta(seconds=5)
 
 # Sensor states
 STATE_CHARGE: Final = "charge"
