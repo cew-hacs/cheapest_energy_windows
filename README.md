@@ -40,6 +40,11 @@ Optimize your energy consumption and battery storage by automatically identifyin
 
 ![Cheapest Energy Windows Dashboard](CEW-Dashboard.jpg?v=2)
 
+> **✨ NEW: Automated Dashboard Installation Available!**
+> The dashboard is now available as a **separate HACS package** that automatically updates!
+> Install it from: [Cheapest Energy Windows Dashboard](https://github.com/cew-hacs/cheapest_energy_windows_dashboard)
+> See the [Dashboard Installation](#dashboard-installation) section below for details.
+
 ## Supported Price Sensors
 
 This integration is designed to work with **Nord Pool** dynamic electricity pricing. It requires a Nord Pool price sensor integration such as:
@@ -123,34 +128,64 @@ You can change the window duration anytime after setup using the `Pricing Window
 
 ## Dashboard Installation
 
-The integration includes a comprehensive pre-built dashboard for monitoring and controlling all features. You need to manually install this dashboard using the YAML configuration file.
+The integration includes a comprehensive pre-built dashboard for monitoring and controlling all features.
 
-### Getting the Dashboard File
+### ✨ Option 1: HACS Package (Recommended - Auto-Updates!)
 
-**Option 1: From your local installation**
-- Path: `/config/custom_components/cheapest_energy_windows/main_dashboard.yaml`
+Install the dashboard as a **separate HACS package** that automatically updates whenever improvements are made:
 
-**Option 2: Download directly**
-- Direct link: [main_dashboard.yaml](https://github.com/cew-hacs/cheapest_energy_windows/blob/main/custom_components/cheapest_energy_windows/main_dashboard.yaml)
+1. **Install the Dashboard Package**:
+   - Open HACS in Home Assistant
+   - Go to **Frontend** section
+   - Click the 3 dots menu (top right) → **"Custom repositories"**
+   - Add repository: `https://github.com/cew-hacs/cheapest_energy_windows_dashboard`
+   - Select category: **"Dashboard"**
+   - Click **"Add"** then find it in the list and click **"Download"**
 
-### Installation Steps
+2. **Create the Dashboard**:
+   - Go to **Settings → Dashboards**
+   - Click **"+ Add Dashboard"** (bottom right)
+   - Fill in title (e.g., "Energy Windows"), icon, and URL
+   - Toggle **"Show in sidebar"** ON and click **"Create"**
+   - Click **⋮ menu** → **"Edit Dashboard"**
+   - Click **⋮ menu** again → **"Raw configuration editor"**
+   - Replace all content with:
+   ```yaml
+   strategy:
+     type: custom:dashboard-cheapest-energy-windows
+   views: []
+   ```
+   - Click **"Save"**
+
+**Benefits**: Automatic updates, no manual copying, always up-to-date with the latest improvements!
+
+### Option 2: Manual YAML Installation
+
+If you prefer manual control, you can still copy the YAML directly:
+
+**Getting the Dashboard File**:
+- **From local**: `/config/custom_components/cheapest_energy_windows/main_dashboard.yaml`
+- **Download**: [main_dashboard.yaml](https://github.com/cew-hacs/cheapest_energy_windows/blob/main/custom_components/cheapest_energy_windows/main_dashboard.yaml)
+
+**Installation Steps**:
 
 1. **Create a new dashboard**:
    - Go to **Settings > Dashboards**
    - Click **+ Add Dashboard** (bottom right)
    - Choose **New dashboard from scratch**
-   - Give it a name (e.g., "Energy Windows" or "CEW Control")
+   - Give it a name (e.g., "Energy Windows")
    - Click **Create**
 
 2. **Add the YAML configuration**:
-   - Click the **⋮** menu (three dots) on your new dashboard
-   - Select **Edit Dashboard**
-   - Click **⋮** menu again and select **Raw configuration editor**
+   - Click **⋮ menu** (three dots) → **"Edit Dashboard"**
+   - Click **⋮ menu** again → **"Raw configuration editor"**
    - Copy the entire contents of `main_dashboard.yaml`
    - Paste it into the editor (replacing any existing content)
    - Click **Save**
 
 3. **Refresh your browser** to ensure all template changes are loaded
+
+**Note**: With this method, you'll need to manually update the dashboard when new features are added.
 
 ### Required Frontend Components
 
