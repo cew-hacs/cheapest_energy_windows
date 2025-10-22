@@ -128,11 +128,9 @@ You can change the window duration anytime after setup using the `Pricing Window
 
 ## Dashboard Installation
 
-The integration includes a comprehensive pre-built dashboard for monitoring and controlling all features.
+The integration includes a comprehensive pre-built dashboard for monitoring and controlling all features. The dashboard is distributed as a **separate HACS package** that automatically updates whenever improvements are made.
 
-### ✨ Option 1: HACS Package (Recommended - Auto-Updates!)
-
-Install the dashboard as a **separate HACS package** that automatically updates whenever improvements are made:
+### Installation Steps
 
 1. **Install the Dashboard Package**:
    - Open HACS in Home Assistant
@@ -157,35 +155,7 @@ Install the dashboard as a **separate HACS package** that automatically updates 
    ```
    - Click **"Save"**
 
-**Benefits**: Automatic updates, no manual copying, always up-to-date with the latest improvements!
-
-### Option 2: Manual YAML Installation
-
-If you prefer manual control, you can still copy the YAML directly:
-
-**Getting the Dashboard File**:
-- **From local**: `/config/custom_components/cheapest_energy_windows/main_dashboard.yaml`
-- **Download**: [main_dashboard.yaml](https://github.com/cew-hacs/cheapest_energy_windows/blob/main/custom_components/cheapest_energy_windows/main_dashboard.yaml)
-
-**Installation Steps**:
-
-1. **Create a new dashboard**:
-   - Go to **Settings > Dashboards**
-   - Click **+ Add Dashboard** (bottom right)
-   - Choose **New dashboard from scratch**
-   - Give it a name (e.g., "Energy Windows")
-   - Click **Create**
-
-2. **Add the YAML configuration**:
-   - Click **⋮ menu** (three dots) → **"Edit Dashboard"**
-   - Click **⋮ menu** again → **"Raw configuration editor"**
-   - Copy the entire contents of `main_dashboard.yaml`
-   - Paste it into the editor (replacing any existing content)
-   - Click **Save**
-
-3. **Refresh your browser** to ensure all template changes are loaded
-
-**Note**: With this method, you'll need to manually update the dashboard when new features are added.
+**Benefits**: Automatic updates via HACS, no manual copying, always up-to-date with the latest improvements!
 
 ### Required Frontend Components
 
@@ -194,6 +164,7 @@ The dashboard requires the following custom cards to be installed via HACS:
 1. **[Mushroom Cards](https://github.com/piitaya/lovelace-mushroom)** - Modern card designs
 2. **[fold-entity-row](https://github.com/thomasloven/lovelace-fold-entity-row)** - Collapsible entity rows
 3. **[ApexCharts Card](https://github.com/RomRider/apexcharts-card)** - Advanced chart rendering
+4. **[Card Mod](https://github.com/thomasloven/lovelace-card-mod)** - Card styling
 
 To install these:
 - Go to **HACS > Frontend**
