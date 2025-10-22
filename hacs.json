@@ -3,13 +3,5 @@
   "content_in_root": false,
   "render_readme": true,
   "homeassistant": "2024.1.0",
-  "domains": [
-    "sensor",
-    "switch",
-    "number",
-    "select",
-    "time",
-    "text"
-  ],
   "country": ["NO", "SE", "DK", "FI", "EE", "LT", "LV", "AT", "BE", "DE", "FR", "NL"]
 }
