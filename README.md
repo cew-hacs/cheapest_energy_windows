@@ -1,7 +1,7 @@
 # Cheapest Energy Windows for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![GitHub Release](https://img.shields.io/github/release/cew-hacs/cheapest_energy_windows.svg)](https://github.com/cew-hacs/cheapest_energy_windows/releases)
+[![GitHub Release](https://img.shields.io/github/release/cheapest-energy-windows/cheapest_energy_windows.svg)](https://github.com/cheapest-energy-windows/cheapest_energy_windows/releases)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Optimize your energy consumption and battery storage by automatically identifying the cheapest charging windows and most expensive discharging periods based on dynamic electricity prices from Nord Pool.
@@ -42,7 +42,7 @@ Optimize your energy consumption and battery storage by automatically identifyin
 
 > **✨ NEW: Automated Dashboard Installation Available!**
 > The dashboard is now available as a **separate HACS package** that automatically updates!
-> Install it from: [Cheapest Energy Windows Dashboard](https://github.com/cew-hacs/cheapest_energy_windows_dashboard)
+> Install it from: [Cheapest Energy Windows Dashboard](https://github.com/cheapest-energy-windows/cheapest_energy_windows_dashboard)
 > See the [Dashboard Installation](#dashboard-installation) section below for details.
 
 ## Supported Price Sensors
@@ -136,7 +136,7 @@ The integration includes a comprehensive pre-built dashboard for monitoring and 
    - Open HACS in Home Assistant
    - Go to **Frontend** section
    - Click the 3 dots menu (top right) → **"Custom repositories"**
-   - Add repository: `https://github.com/cew-hacs/cheapest_energy_windows_dashboard`
+   - Add repository: `https://github.com/cheapest-energy-windows/cheapest_energy_windows_dashboard`
    - Select category: **"Dashboard"**
    - Click **"Add"** then find it in the list and click **"Download"**
 
@@ -544,7 +544,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 For issues, questions, or suggestions:
-- Open an issue on [GitHub](https://github.com/cew-hacs/cheapest_energy_windows/issues)
+- Open an issue on [GitHub](https://github.com/cheapest-energy-windows/cheapest_energy_windows/issues)
 - Join the discussion on [Home Assistant Community](https://community.home-assistant.io/)
 
 ## Changelog
