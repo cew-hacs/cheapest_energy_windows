@@ -1372,8 +1372,8 @@ views:
                       min-height: 200px;
                     }
                 content: >-
-                  **⚡ Charge Windows** ({{ state_attr('sensor.cew_tomorrow',
-                  'cheapest_times') | default([]) | length }} periods)
+                  **⚡ Charge Windows** ({{ (state_attr('sensor.cew_tomorrow',
+                  'cheapest_times') or []) | length }} periods)
 
                   {% set sensorName = states('text.cew_price_sensor_entity') or
                   'sensor.nordpool_kwh_nl_eur_3_10_0' %} {% set nordpool =
@@ -1381,8 +1381,8 @@ views:
                   states('number.cew_additional_cost') | float(0.02398) %} {%
                   set tax = states('number.cew_tax') | float(0.12286) %} {% set
                   vat = states('number.cew_vat') | float(0.21) %} {% set times =
-                  state_attr('sensor.cew_tomorrow', 'cheapest_times') %} {% if
-                  times and times | length > 0 and
+                  state_attr('sensor.cew_tomorrow', 'cheapest_times') or [] %}
+                  {% if times | length > 0 and
                   nordpool.attributes.raw_tomorrow %} {% set pricing_mode =
                   states('select.cew_pricing_window_duration') |
                   default('15_minutes') %} {% set window_seconds = 3600 if
@@ -1430,8 +1430,8 @@ views:
 
                   &nbsp;
 
-                  **🔋 Discharge Windows** ({{ state_attr('sensor.cew_tomorrow',
-                  'expensive_times') | default([]) | length }} periods)
+                  **🔋 Discharge Windows** ({{ (state_attr('sensor.cew_tomorrow',
+                  'expensive_times') or []) | length }} periods)
 
                   {% set sensorName = states('text.cew_price_sensor_entity') or
                   'sensor.nordpool_kwh_nl_eur_3_10_0' %} {% set nordpool =
@@ -1439,8 +1439,8 @@ views:
                   states('number.cew_additional_cost') | float(0.02398) %} {%
                   set tax = states('number.cew_tax') | float(0.12286) %} {% set
                   vat = states('number.cew_vat') | float(0.21) %} {% set times =
-                  state_attr('sensor.cew_tomorrow', 'expensive_times') %} {% if
-                  times and times | length > 0 and
+                  state_attr('sensor.cew_tomorrow', 'expensive_times') or [] %}
+                  {% if times | length > 0 and
                   nordpool.attributes.raw_tomorrow %} {% set pricing_mode =
                   states('select.cew_pricing_window_duration') |
                   default('15_minutes') %} {% set window_seconds = 3600 if
