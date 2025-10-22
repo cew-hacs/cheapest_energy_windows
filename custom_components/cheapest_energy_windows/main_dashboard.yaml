@@ -897,7 +897,7 @@ views:
                       cheapest.attributes.expensive_times_aggressive || [];
                       const spreadMet = cheapest.attributes.spread_met; const
                       dischargeSpreadMet =
-                      cheapest.attributes.discharge_spread_met;
+                      cheapest.attributes.discharge_spread_met ?? (expensiveTimes.length > 0); const aggressiveDischargeSpreadMet = cheapest.attributes.aggressive_discharge_spread_met ?? (expensiveAggressiveTimes.length > 0);
 
                       const cheapestSet = new Set(cheapestTimes.map(t => new
                       Date(t).getTime())); const expensiveSet = new
@@ -941,11 +941,11 @@ views:
                         if (pricingMode === '1_hour') {
                           const hourStart = Math.floor(time / 3600000) * 3600000;
                           isCheap = spreadMet && cheapestHours.has(hourStart);
-                          isExpensiveAggressive = expensiveAggressiveHours.has(hourStart);
+                          isExpensiveAggressive = aggressiveDischargeSpreadMet && expensiveAggressiveHours.has(hourStart);
                           isExpensive = dischargeSpreadMet && expensiveHours.has(hourStart);
                         } else {
                           isCheap = spreadMet && cheapestSet.has(time);
-                          isExpensiveAggressive = expensiveAggressiveSet.has(time);
+                          isExpensiveAggressive = aggressiveDischargeSpreadMet && expensiveAggressiveSet.has(time);
                           isExpensive = dischargeSpreadMet && expensiveSet.has(time);
                         }
 
@@ -1375,42 +1375,18 @@ views:
                   **⚡ Charge Windows** ({{ (state_attr('sensor.cew_tomorrow',
                   'cheapest_times') or []) | length }} periods)
 
-                  {% set sensorName = states('text.cew_price_sensor_entity') or
-                  'sensor.nordpool_kwh_nl_eur_3_10_0' %} {% set nordpool =
-                  states[sensorName] %} {% set add =
-                  states('number.cew_additional_cost') | float(0.02398) %} {%
-                  set tax = states('number.cew_tax') | float(0.12286) %} {% set
-                  vat = states('number.cew_vat') | float(0.21) %} {% set times =
-                  state_attr('sensor.cew_tomorrow', 'cheapest_times') or [] %}
-                  {% if times | length > 0 and
-                  nordpool.attributes.raw_tomorrow %} {% set pricing_mode =
-                  states('select.cew_pricing_window_duration') |
-                  default('15_minutes') %} {% set window_seconds = 3600 if
-                  pricing_mode == '1_hour' else 900 %} {% set ns =
-                  namespace(items=[]) %} {% for time in times %} {% set time_ts
-                  = as_timestamp(time) %} {% if pricing_mode == '1_hour' %} {%
-                  set hour_sum = namespace(value=0, count=0) %} {% set hour_str
-                  = time | as_datetime | string %} {% set hour_str =
-                  hour_str[11:13] %} {% for item in
-                  nordpool.attributes.raw_tomorrow %} {% set raw_time =
-                  item.start | replace('"', '') %} {% if raw_time[11:13] ==
-                  hour_str %} {% set hour_sum.value = hour_sum.value +
-                  item.value %} {% set hour_sum.count = hour_sum.count + 1 %} {%
-                  endif %} {% endfor %} {% if hour_sum.count > 0 %} {% set
-                  avg_value = hour_sum.value / hour_sum.count %} {% set
-                  actual_price = avg_value * (1 + vat) + tax + add %} {% set
-                  ns.items = ns.items + [{'time': time_ts, 'price':
-                  actual_price}] %} {% endif %} {% else %} {% set raw_price =
-                  none %} {% for item in nordpool.attributes.raw_tomorrow %} {%
-                  set raw_time = item.start | replace('"', '') | as_datetime |
-                  as_timestamp %} {% if raw_time == time_ts %} {% set raw_price
-                  = (item.value | float(0)) * (1 + vat) + tax + add %} {% endif
-                  %} {% endfor %} {% if raw_price != none %} {% set ns.items =
-                  ns.items + [{'time': time_ts, 'price': raw_price}] %} {% endif
-                  %} {% endif %} {% endfor %} {% if ns.items | length > 0 %} {%
-                  set sorted_items = ns.items | sort(attribute='time') %} {% set
-                  ns = namespace(current_group={'start': sorted_items[0].time,
-                  'end': sorted_items[0].time + window_seconds, 'prices':
+                  {% set times = state_attr('sensor.cew_tomorrow',
+                  'cheapest_times') or [] %} {% set prices =
+                  state_attr('sensor.cew_tomorrow', 'cheapest_prices') or [] %}
+                  {% if times | length > 0 %} {% set window_seconds = 3600 if
+                  states('select.cew_pricing_window_duration') == '1_hour' else
+                  900 %} {% set ns = namespace(items=[], groups=[]) %} {% for i
+                  in range(times | length) %} {% set ns.items = ns.items +
+                  [{'time': as_timestamp(times[i]), 'price': prices[i]}] %} {%
+                  endfor %} {% set sorted_items = ns.items |
+                  sort(attribute='time') %} {% set ns =
+                  namespace(current_group={'start': sorted_items[0].time, 'end':
+                  sorted_items[0].time + window_seconds, 'prices':
                   [sorted_items[0].price]}, groups=[]) %} {% for item in
                   sorted_items[1:] %} {% if item.time == ns.current_group.end %}
                   {% set ns.current_group = {'start': ns.current_group.start,
@@ -1425,50 +1401,26 @@ views:
                   timestamp_custom('%H:%M') }}** • Avg: €{{ (group.prices | sum
                   / group.prices | length) | round(3) }}{% if not loop.last %}
 
-                  {% endif %} {% endfor %} {% endif %} {% else %} *No charge
-                  windows scheduled* {% endif %}
+                  {% endif %} {% endfor %} {% else %} *No charge windows
+                  scheduled* {% endif %}
 
                   &nbsp;
 
                   **🔋 Discharge Windows** ({{ (state_attr('sensor.cew_tomorrow',
                   'expensive_times') or []) | length }} periods)
 
-                  {% set sensorName = states('text.cew_price_sensor_entity') or
-                  'sensor.nordpool_kwh_nl_eur_3_10_0' %} {% set nordpool =
-                  states[sensorName] %} {% set add =
-                  states('number.cew_additional_cost') | float(0.02398) %} {%
-                  set tax = states('number.cew_tax') | float(0.12286) %} {% set
-                  vat = states('number.cew_vat') | float(0.21) %} {% set times =
-                  state_attr('sensor.cew_tomorrow', 'expensive_times') or [] %}
-                  {% if times | length > 0 and
-                  nordpool.attributes.raw_tomorrow %} {% set pricing_mode =
-                  states('select.cew_pricing_window_duration') |
-                  default('15_minutes') %} {% set window_seconds = 3600 if
-                  pricing_mode == '1_hour' else 900 %} {% set ns =
-                  namespace(items=[]) %} {% for time in times %} {% set time_ts
-                  = as_timestamp(time) %} {% if pricing_mode == '1_hour' %} {%
-                  set hour_sum = namespace(value=0, count=0) %} {% set hour_str
-                  = time | as_datetime | string %} {% set hour_str =
-                  hour_str[11:13] %} {% for item in
-                  nordpool.attributes.raw_tomorrow %} {% set raw_time =
-                  item.start | replace('"', '') %} {% if raw_time[11:13] ==
-                  hour_str %} {% set hour_sum.value = hour_sum.value +
-                  item.value %} {% set hour_sum.count = hour_sum.count + 1 %} {%
-                  endif %} {% endfor %} {% if hour_sum.count > 0 %} {% set
-                  avg_value = hour_sum.value / hour_sum.count %} {% set
-                  actual_price = avg_value * (1 + vat) + tax + add %} {% set
-                  ns.items = ns.items + [{'time': time_ts, 'price':
-                  actual_price}] %} {% endif %} {% else %} {% set raw_price =
-                  none %} {% for item in nordpool.attributes.raw_tomorrow %} {%
-                  set raw_time = item.start | replace('"', '') | as_datetime |
-                  as_timestamp %} {% if raw_time == time_ts %} {% set raw_price
-                  = (item.value | float(0)) * (1 + vat) + tax + add %} {% endif
-                  %} {% endfor %} {% if raw_price != none %} {% set ns.items =
-                  ns.items + [{'time': time_ts, 'price': raw_price}] %} {% endif
-                  %} {% endif %} {% endfor %} {% if ns.items | length > 0 %} {%
-                  set sorted_items = ns.items | sort(attribute='time') %} {% set
-                  ns = namespace(current_group={'start': sorted_items[0].time,
-                  'end': sorted_items[0].time + window_seconds, 'prices':
+                  {% set times = state_attr('sensor.cew_tomorrow',
+                  'expensive_times') or [] %} {% set prices =
+                  state_attr('sensor.cew_tomorrow', 'expensive_prices') or [] %}
+                  {% if times | length > 0 %} {% set window_seconds = 3600 if
+                  states('select.cew_pricing_window_duration') == '1_hour' else
+                  900 %} {% set ns = namespace(items=[], groups=[]) %} {% for i
+                  in range(times | length) %} {% set ns.items = ns.items +
+                  [{'time': as_timestamp(times[i]), 'price': prices[i]}] %} {%
+                  endfor %} {% set sorted_items = ns.items |
+                  sort(attribute='time') %} {% set ns =
+                  namespace(current_group={'start': sorted_items[0].time, 'end':
+                  sorted_items[0].time + window_seconds, 'prices':
                   [sorted_items[0].price]}, groups=[]) %} {% for item in
                   sorted_items[1:] %} {% if item.time == ns.current_group.end %}
                   {% set ns.current_group = {'start': ns.current_group.start,
@@ -1483,8 +1435,8 @@ views:
                   timestamp_custom('%H:%M') }}** • Avg: €{{ (group.prices | sum
                   / group.prices | length) | round(3) }}{% if not loop.last %}
 
-                  {% endif %} {% endfor %} {% endif %} {% else %} *No discharge
-                  windows scheduled* {% endif %}
+                  {% endif %} {% endfor %} {% else %} *No discharge windows
+                  scheduled* {% endif %}
       - type: grid
         cards:
           - type: vertical-stack
