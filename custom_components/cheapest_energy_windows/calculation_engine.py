@@ -709,7 +709,7 @@ class WindowCalculationEngine:
 
         # Calculate spreads
         spread_pct = 0.0
-        if avg_cheap > 0:
+        if avg_cheap > 0 and avg_expensive > 0:
             spread_pct = float(((avg_expensive - avg_cheap) / avg_cheap) * 100)
 
         # Count completed windows
