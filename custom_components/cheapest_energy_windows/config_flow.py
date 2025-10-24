@@ -39,6 +39,7 @@ from .const import (
     DEFAULT_MIN_SPREAD_DISCHARGE,
     DEFAULT_AGGRESSIVE_DISCHARGE_SPREAD,
     DEFAULT_MIN_PRICE_DIFFERENCE,
+    DEFAULT_PRICE_OVERRIDE_THRESHOLD,
     PRICING_15_MINUTES,
     PRICING_1_HOUR,
     LOGGER_NAME,
@@ -83,42 +84,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
-        if user_input is not None:
-            # Store the choice and move to next step
-            if user_input.get("setup_type") == "guided":
-                return await self.async_step_dependencies()
-            else:
-                # Quick setup with defaults
-                self.data = {
-                    CONF_PRICE_SENSOR: DEFAULT_PRICE_SENSOR,
-                    CONF_VAT_RATE: DEFAULT_VAT_RATE,
-                    CONF_TAX: DEFAULT_TAX,
-                    CONF_ADDITIONAL_COST: DEFAULT_ADDITIONAL_COST,
-                }
-                self.options = {
-                    "charge_power": DEFAULT_CHARGE_POWER,
-                    "discharge_power": DEFAULT_DISCHARGE_POWER,
-                    "battery_rte": DEFAULT_BATTERY_RTE,
-                }
-                # Create automation for quick setup too (was skipping this step)
-                return await self.async_step_automation()
-
-        return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema({
-                vol.Required("setup_type", default="guided"): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=[
-                            {"label": "Guided Setup (Recommended)", "value": "guided"},
-                            {"label": "Quick Setup with Defaults", "value": "quick"},
-                        ]
-                    )
-                ),
-            }),
-            description_placeholders={
-                "description": "This integration helps you optimize energy costs by finding the cheapest times to charge and most expensive times to discharge your battery system."
-            },
-        )
+        # Directly start guided setup
+        return await self.async_step_dependencies()
 
     async def async_step_dependencies(
         self, user_input: dict[str, Any] | None = None
@@ -173,7 +140,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }),
             errors=errors,
             description_placeholders={
-                "info": f"✅ Detected {len(price_sensors)} compatible price sensor(s)\n\nPlease select your Nordpool price sensor:\n{chr(10).join('- ' + s for s in price_sensors[:5])}\n\nThe sensor must have 'raw_today' attribute with price data."
+                "info": f"✅ Detected {len(price_sensors)} compatible price sensor(s)\n\n⚠️ **IMPORTANT - Price Unit Requirement:**\nYour price sensor MUST use EUR/kWh (e.g., 0.25), NOT cents (e.g., 25).\nSensors configured for cents/kWh are currently not supported and will cause incorrect calculations.\n\nPlease select your price sensor:\n{chr(10).join('- ' + s for s in price_sensors[:5])}\n\nThe sensor must have 'raw_today' attribute with hourly or 15-minute price data."
             },
         )
 
@@ -315,9 +282,18 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         mode=selector.NumberSelectorMode.BOX,
                     )
                 ),
+                vol.Required("price_override_enabled", default=False): selector.BooleanSelector(),
+                vol.Optional("price_override_threshold", default=DEFAULT_PRICE_OVERRIDE_THRESHOLD): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=0.5,
+                        step=0.01,
+                        mode=selector.NumberSelectorMode.BOX,
+                    )
+                ),
             }),
             description_placeholders={
-                "info": f"Configure pricing window duration and optimization settings.\n\n15 Minutes: More granular optimization (use if your contract has 15-minute pricing)\n1 Hour: Standard hourly optimization (use if your contract has hourly pricing)\n\nSpread settings control when to charge/discharge based on price differences.\n\nDefaults:\n- Charging Windows: {DEFAULT_CHARGING_WINDOWS}\n- Discharge Windows: {DEFAULT_EXPENSIVE_WINDOWS}\n- Percentiles: {DEFAULT_CHEAP_PERCENTILE}% cheap, {DEFAULT_EXPENSIVE_PERCENTILE}% expensive\n- Min Spreads: {DEFAULT_MIN_SPREAD}% charge, {DEFAULT_MIN_SPREAD_DISCHARGE}% discharge, {DEFAULT_AGGRESSIVE_DISCHARGE_SPREAD}% aggressive"
+                "info": f"Configure pricing window duration and optimization settings.\n\n15 Minutes: More granular optimization (use if your contract has 15-minute pricing)\n1 Hour: Standard hourly optimization (use if your contract has hourly pricing)\n\nSpread settings control when to charge/discharge based on price differences.\n\nPrice Override: Always charge when price is below threshold, regardless of spread/windows.\n\nDefaults:\n- Charging Windows: {DEFAULT_CHARGING_WINDOWS}\n- Discharge Windows: {DEFAULT_EXPENSIVE_WINDOWS}\n- Percentiles: {DEFAULT_CHEAP_PERCENTILE}% cheap, {DEFAULT_EXPENSIVE_PERCENTILE}% expensive\n- Min Spreads: {DEFAULT_MIN_SPREAD}% charge, {DEFAULT_MIN_SPREAD_DISCHARGE}% discharge, {DEFAULT_AGGRESSIVE_DISCHARGE_SPREAD}% aggressive\n- Price Override: Disabled, €{DEFAULT_PRICE_OVERRIDE_THRESHOLD}/kWh"
             },
         )
 
@@ -504,19 +480,25 @@ Total: 71 entities
             step_id="dashboard",
             data_schema=vol.Schema({}),
             description_placeholders={
-                "info": "📊 **Dashboard Available**\n\n"
-                       "A pre-configured dashboard is available for download separately.\n\n"
+                "info": "📊 **Dashboard Available via HACS**\n\n"
+                       "A beautiful, pre-configured dashboard is available as a separate HACS plugin.\n\n"
+                       "**Why install from HACS?**\n"
+                       "✅ Automatic updates when improvements are released\n"
+                       "✅ One-click installation\n"
+                       "✅ Always stays in sync with integration features\n\n"
                        "**To install the dashboard:**\n\n"
-                       "1. Download `main_dashboard.yaml` from the integration repository\n"
-                       "2. Go to **Settings** → **Dashboards**\n"
-                       "3. Click **Add Dashboard**\n"
-                       "4. Give it a name (e.g., \"CEW\")\n"
-                       "5. Choose **Start with an empty dashboard**\n"
-                       "6. Click the **3-dot menu** → **Edit dashboard**\n"
-                       "7. Click the **3-dot menu** → **Raw configuration editor**\n"
-                       "8. Copy the content from `main_dashboard.yaml`\n"
-                       "9. Paste and click **Save**\n\n"
-                       "The dashboard provides real-time energy price monitoring, visual charge/discharge windows, battery status, and quick settings adjustments.\n\n"
+                       "1. Go to **HACS** → **Frontend**\n"
+                       "2. Click **Explore & Download Repositories**\n"
+                       "3. Search for **\"Cheapest Energy Windows Dashboard\"**\n"
+                       "4. Click **Download**\n"
+                       "5. Follow the HACS installation instructions\n"
+                       "6. The dashboard will appear in your sidebar automatically\n\n"
+                       "**Dashboard Features:**\n"
+                       "- Real-time energy price monitoring with ApexCharts visualizations\n"
+                       "- Visual charge/discharge windows display\n"
+                       "- Battery system status and metrics\n"
+                       "- Quick access to all settings in collapsible sections\n"
+                       "- Responsive mobile-friendly design\n\n"
                        "Click **Submit** to complete the setup."
             },
         )

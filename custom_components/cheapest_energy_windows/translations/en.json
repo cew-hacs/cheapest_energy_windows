@@ -112,7 +112,8 @@
       }
     },
     "error": {
-      "invalid_price_sensor": "The selected price sensor is invalid or missing required attributes",
+      "invalid_price_sensor": "The selected price sensor is invalid, missing required 'raw_today' attribute, or not properly configured. Ensure the sensor provides hourly or 15-minute price data.",
+      "no_price_sensors": "No compatible price sensors found. Please install Nordpool from HACS first.",
       "automation_creation_failed": "Failed to create automation. You can create it manually after setup.",
       "unknown": "Unexpected error occurred"
     },

@@ -14,7 +14,7 @@ views:
                     primary: Average Price
                     secondary: >-
                       {% set sensorName = states('text.cew_price_sensor_entity')
-                      or 'sensor.nordpool_kwh_nl_eur_3_10_0' %} {% set nordpool
+                      %} {% set nordpool
                       = states[sensorName] %} {% set add =
                       states('number.cew_additional_cost') | float(0.02398) %}
                       {% set tax = states('number.cew_tax') | float(0.12286) %}
@@ -150,13 +150,13 @@ views:
                         return '<div style="' + baseStyle + ' background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: #fff;"><div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">💡 Normal Period</div><div style="font-size: 12px; opacity: 0.9;">Smart meter mode</div></div>';
                       }
                 series:
-                  - entity: sensor.nordpool_kwh_nl_eur_3_10_0
+                  - entity: text.cew_price_sensor_entity
                     name: Energy Periods
                     type: column
                     data_generator: >
                       const sensorName =
                       hass.states['text.cew_price_sensor_entity']?.state ||
-                      'sensor.nordpool_kwh_nl_eur_3_10_0'; const nordpool =
+                      states('text.cew_price_sensor_entity'); const nordpool =
                       hass.states[sensorName]; const cheapest =
                       hass.states['sensor.cew_today']; if
                       (!nordpool?.attributes?.raw_today ||
@@ -332,7 +332,7 @@ views:
                       style:
                         fontSize: 11px
                 series:
-                  - entity: sensor.nordpool_kwh_nl_eur_3_10_0
+                  - entity: text.cew_price_sensor_entity
                     name: Price
                     type: area
                     stroke_width: 2
@@ -340,7 +340,7 @@ views:
                     data_generator: >
                       const sensorName =
                       hass.states['text.cew_price_sensor_entity']?.state ||
-                      'sensor.nordpool_kwh_nl_eur_3_10_0'; const nordpool =
+                      states('text.cew_price_sensor_entity'); const nordpool =
                       hass.states[sensorName];
 
                       if (!nordpool?.attributes?.raw_today) return [];
@@ -741,7 +741,7 @@ views:
                     primary: Average Price
                     secondary: >-
                       {% set sensorName = states('text.cew_price_sensor_entity')
-                      or 'sensor.nordpool_kwh_nl_eur_3_10_0' %} {% set nordpool
+                      %} {% set nordpool
                       = states[sensorName] %} {% set add =
                       states('number.cew_additional_cost') | float(0.02398) %}
                       {% set tax = states('number.cew_tax') | float(0.12286) %}
@@ -888,13 +888,13 @@ views:
                         -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
                         sans-serif
                 series:
-                  - entity: sensor.nordpool_kwh_nl_eur_3_10_0
+                  - entity: text.cew_price_sensor_entity
                     name: Energy Periods
                     type: column
                     data_generator: >
                       const sensorName =
                       hass.states['text.cew_price_sensor_entity']?.state ||
-                      'sensor.nordpool_kwh_nl_eur_3_10_0'; const nordpool =
+                      states('text.cew_price_sensor_entity'); const nordpool =
                       hass.states[sensorName]; const cheapest =
                       hass.states['sensor.cew_tomorrow']; if
                       (!nordpool?.attributes?.raw_tomorrow ||
@@ -1086,7 +1086,7 @@ views:
                         -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
                         sans-serif
                 series:
-                  - entity: sensor.nordpool_kwh_nl_eur_3_10_0
+                  - entity: text.cew_price_sensor_entity
                     name: Price
                     type: area
                     stroke_width: 2
@@ -1094,7 +1094,7 @@ views:
                     data_generator: >
                       const sensorName =
                       hass.states['text.cew_price_sensor_entity']?.state ||
-                      'sensor.nordpool_kwh_nl_eur_3_10_0'; const nordpool =
+                      states('text.cew_price_sensor_entity'); const nordpool =
                       hass.states[sensorName];
 
                       if (!nordpool?.attributes?.raw_tomorrow ||
@@ -1883,7 +1883,7 @@ views:
                         secondary: >-
                           {% set sensorName =
                           states('text.cew_price_sensor_entity') or
-                          'sensor.nordpool_kwh_nl_eur_3_10_0' %} {% set nordpool
+                          states('text.cew_price_sensor_entity') %} {% set nordpool
                           = states[sensorName] %} {% set add =
                           states('number.cew_additional_cost') | float(0.02398)
                           %} {% set tax = states('number.cew_tax') |
