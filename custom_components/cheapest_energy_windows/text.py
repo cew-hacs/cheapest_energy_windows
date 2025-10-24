@@ -128,6 +128,15 @@ async def async_setup_entry(
             "mdi:robot",
             r"^(automation\.|script\.|scene\.)[a-z0-9_]+$|^not_configured$"
         ),
+        CEWText(
+            hass,
+            config_entry,
+            "battery_off_action",
+            "Battery Off Action",
+            config_entry.data.get("battery_off_action", "not_configured"),
+            "mdi:robot",
+            r"^(automation\.|script\.|scene\.)[a-z0-9_]+$|^not_configured$"
+        ),
     ]
 
     async_add_entities(texts)

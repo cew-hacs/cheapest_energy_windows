@@ -102,13 +102,15 @@
           "battery_idle_action": "Idle Mode Action",
           "battery_charge_action": "Charge Mode Action",
           "battery_discharge_action": "Discharge Mode Action",
-          "battery_aggressive_discharge_action": "Aggressive Discharge Mode Action"
+          "battery_aggressive_discharge_action": "Aggressive Discharge Mode Action",
+          "battery_off_action": "Off Mode Action"
         },
         "data_description": {
           "battery_idle_action": "Select automation/script for idle mode. Example: Set battery to follow grid (NoM - No Operation Mode)",
           "battery_charge_action": "Select automation/script for charge mode. Example: Enable battery charging from grid at max power",
           "battery_discharge_action": "Select automation/script for discharge mode. Example: Enable battery discharge to grid at normal power",
-          "battery_aggressive_discharge_action": "Select automation/script for aggressive discharge. Example: Enable maximum discharge power during peak prices"
+          "battery_aggressive_discharge_action": "Select automation/script for aggressive discharge. Example: Enable maximum discharge power during peak prices",
+          "battery_off_action": "Select automation/script for off mode. Example: Set battery to manual mode when automation is disabled"
         }
       },
       "automation": {

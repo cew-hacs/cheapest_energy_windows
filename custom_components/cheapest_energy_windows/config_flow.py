@@ -373,6 +373,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 "battery_charge_action": user_input.get("battery_charge_action", "not_configured"),
                 "battery_discharge_action": user_input.get("battery_discharge_action", "not_configured"),
                 "battery_aggressive_discharge_action": user_input.get("battery_aggressive_discharge_action", "not_configured"),
+                "battery_off_action": user_input.get("battery_off_action", "not_configured"),
             }
             self.data.update(battery_ops)
             return await self.async_step_automation()
@@ -399,6 +400,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     )
                 ),
                 vol.Optional("battery_aggressive_discharge_action"): selector.EntitySelector(
+                    selector.EntitySelectorConfig(
+                        domain=["automation", "script", "scene"],
+                        multiple=False,
+                    )
+                ),
+                vol.Optional("battery_off_action"): selector.EntitySelector(
                     selector.EntitySelectorConfig(
                         domain=["automation", "script", "scene"],
                         multiple=False,

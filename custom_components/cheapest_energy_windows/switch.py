@@ -46,9 +46,6 @@ async def async_setup_entry(
         ("notify_discharge_aggressive", "Notify Discharge Aggressive", True, "mdi:battery-alert"),
         ("notify_idle", "Notify Idle", True, "mdi:battery"),
         ("battery_use_soc_safety", "Battery Use SOC Safety", False, "mdi:shield-battery"),
-        ("dashboard_battery_system_expanded", "Dashboard Battery System Expanded", False, "mdi:battery-settings"),
-        ("dashboard_battery_today_expanded", "Dashboard Battery Today Expanded", True, "mdi:chart-timeline-variant"),
-        ("dashboard_battery_tomorrow_expanded", "Dashboard Battery Tomorrow Expanded", False, "mdi:chart-timeline-variant-shimmer"),
     ]
 
     for key, name, default, icon in switch_configs:

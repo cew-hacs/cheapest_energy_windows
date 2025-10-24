@@ -505,11 +505,25 @@ action:
               message: >-
                 CEW automation has been turned off.
 
-          # ADD YOUR BATTERY MANUAL MODE ACTIONS HERE (optional)
-          # Examples:
-          # - service: switch.turn_off
-          #   target:
-          #     entity_id: switch.your_battery_auto_mode
+          # Execute linked automation/script/scene if configured
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: >-
+                      {% set entity = states('text.cew_battery_off_action') %}
+                      {{ entity != 'not_configured' and entity != 'unknown' and entity != '' }}
+                sequence:
+                  - service: >
+                      {% if states('text.cew_battery_off_action').startswith('automation.') %}
+                        automation.trigger
+                      {% elif states('text.cew_battery_off_action').startswith('script.') %}
+                        script.turn_on
+                      {% elif states('text.cew_battery_off_action').startswith('scene.') %}
+                        scene.turn_on
+                      {% endif %}
+                    target:
+                      entity_id: "{{ states('text.cew_battery_off_action') }}"
+            default: []
 
     default: []
 
