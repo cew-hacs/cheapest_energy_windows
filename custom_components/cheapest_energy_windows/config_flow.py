@@ -67,6 +67,10 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
         if 'raw_today' not in attrs:
             raise ValueError(f"Price sensor {price_sensor} missing 'raw_today' attribute")
 
+        # Check if sensor uses cents instead of EUR/kWh
+        if attrs.get('price_in_cents') is True:
+            raise ValueError(f"Price sensor {price_sensor} uses cents/kWh. Only EUR/kWh sensors are supported.")
+
     return {"title": "Cheapest Energy Windows"}
 
 
@@ -114,6 +118,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         price_sensors = []
         for state in self.hass.states.async_all("sensor"):
             if state.attributes.get("raw_today") is not None:
+                # Exclude sensors with price_in_cents enabled
+                if state.attributes.get("price_in_cents") is True:
+                    continue
                 price_sensors.append(state.entity_id)
 
         # Show error if no sensors found
