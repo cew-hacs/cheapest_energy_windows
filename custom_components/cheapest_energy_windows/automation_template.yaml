@@ -129,6 +129,90 @@ action:
           - condition: trigger
             id: discharge_start
         sequence:
+          # Check SOC safety limits before discharge
+          - choose:
+              # Case 1: SOC safety enabled but sensor not configured
+              - conditions:
+                  - condition: state
+                    entity_id: switch.cew_battery_use_soc_safety
+                    state: 'on'
+                  - condition: state
+                    entity_id: text.cew_battery_soc_sensor
+                    state: 'not_configured'
+                sequence:
+                  - condition: and
+                    conditions:
+                      - condition: state
+                        entity_id: switch.cew_notifications_enabled
+                        state: 'on'
+                      - condition: or
+                        conditions:
+                          - condition: state
+                            entity_id: switch.cew_quiet_hours_enabled
+                            state: 'off'
+                          - condition: template
+                            value_template: >-
+                              {% set now_time = now().strftime('%H:%M') %}
+                              {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                              {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                              {{ now_time < quiet_start or now_time >= quiet_end }}
+                  - service: notify.notify
+                    data:
+                      title: "⚠️ CEW: SOC Safety Misconfigured"
+                      message: >-
+                        Battery SOC Safety is enabled but battery sensor is not configured.
+
+                        Please configure the battery SOC sensor in Settings or disable SOC Safety.
+                  - stop: "SOC safety enabled but sensor not configured"
+
+              # Case 2: SOC safety enabled and SOC below minimum
+              - conditions:
+                  - condition: state
+                    entity_id: switch.cew_battery_use_soc_safety
+                    state: 'on'
+                  - condition: template
+                    value_template: >-
+                      {% set sensor = states('text.cew_battery_soc_sensor') %}
+                      {% set min_soc = states('number.cew_battery_min_soc_discharge') | float(20) %}
+                      {% set current_soc = states(sensor) | float(-1) %}
+                      {{ sensor != 'not_configured' and current_soc >= 0 and current_soc <= min_soc }}
+                sequence:
+                  # Set mode to idle
+                  - service: input_text.set_value
+                    target:
+                      entity_id: input_text.cew_current_mode
+                    data:
+                      value: 'idle'
+
+                  # Send notification if enabled
+                  - condition: and
+                    conditions:
+                      - condition: state
+                        entity_id: switch.cew_notifications_enabled
+                        state: 'on'
+                      - condition: or
+                        conditions:
+                          - condition: state
+                            entity_id: switch.cew_quiet_hours_enabled
+                            state: 'off'
+                          - condition: template
+                            value_template: >-
+                              {% set now_time = now().strftime('%H:%M') %}
+                              {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                              {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                              {{ now_time < quiet_start or now_time >= quiet_end }}
+                  - service: notify.notify
+                    data:
+                      title: "🔋 CEW: Discharge Blocked by SOC Safety"
+                      message: >-
+                        {% set sensor = states('text.cew_battery_soc_sensor') %}
+                        {% set min_soc = states('number.cew_battery_min_soc_discharge') | float(20) %}
+                        {% set current_soc = states(sensor) | float(0) %}
+                        Battery SOC ({{ current_soc }}%) is at or below minimum discharge limit ({{ min_soc }}%).
+
+                        Mode set to idle to protect battery.
+                  - stop: "SOC below minimum discharge threshold"
+
           # Send notification if enabled
           - condition: and
             conditions:
@@ -179,6 +263,90 @@ action:
           - condition: trigger
             id: discharge_aggressive_start
         sequence:
+          # Check SOC safety limits before aggressive discharge
+          - choose:
+              # Case 1: SOC safety enabled but sensor not configured
+              - conditions:
+                  - condition: state
+                    entity_id: switch.cew_battery_use_soc_safety
+                    state: 'on'
+                  - condition: state
+                    entity_id: text.cew_battery_soc_sensor
+                    state: 'not_configured'
+                sequence:
+                  - condition: and
+                    conditions:
+                      - condition: state
+                        entity_id: switch.cew_notifications_enabled
+                        state: 'on'
+                      - condition: or
+                        conditions:
+                          - condition: state
+                            entity_id: switch.cew_quiet_hours_enabled
+                            state: 'off'
+                          - condition: template
+                            value_template: >-
+                              {% set now_time = now().strftime('%H:%M') %}
+                              {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                              {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                              {{ now_time < quiet_start or now_time >= quiet_end }}
+                  - service: notify.notify
+                    data:
+                      title: "⚠️ CEW: SOC Safety Misconfigured"
+                      message: >-
+                        Battery SOC Safety is enabled but battery sensor is not configured.
+
+                        Please configure the battery SOC sensor in Settings or disable SOC Safety.
+                  - stop: "SOC safety enabled but sensor not configured"
+
+              # Case 2: SOC safety enabled and SOC below minimum for aggressive discharge
+              - conditions:
+                  - condition: state
+                    entity_id: switch.cew_battery_use_soc_safety
+                    state: 'on'
+                  - condition: template
+                    value_template: >-
+                      {% set sensor = states('text.cew_battery_soc_sensor') %}
+                      {% set min_soc = states('number.cew_battery_min_soc_aggressive_discharge') | float(30) %}
+                      {% set current_soc = states(sensor) | float(-1) %}
+                      {{ sensor != 'not_configured' and current_soc >= 0 and current_soc <= min_soc }}
+                sequence:
+                  # Set mode to idle
+                  - service: input_text.set_value
+                    target:
+                      entity_id: input_text.cew_current_mode
+                    data:
+                      value: 'idle'
+
+                  # Send notification if enabled
+                  - condition: and
+                    conditions:
+                      - condition: state
+                        entity_id: switch.cew_notifications_enabled
+                        state: 'on'
+                      - condition: or
+                        conditions:
+                          - condition: state
+                            entity_id: switch.cew_quiet_hours_enabled
+                            state: 'off'
+                          - condition: template
+                            value_template: >-
+                              {% set now_time = now().strftime('%H:%M') %}
+                              {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                              {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                              {{ now_time < quiet_start or now_time >= quiet_end }}
+                  - service: notify.notify
+                    data:
+                      title: "🔋 CEW: Aggressive Discharge Blocked by SOC Safety"
+                      message: >-
+                        {% set sensor = states('text.cew_battery_soc_sensor') %}
+                        {% set min_soc = states('number.cew_battery_min_soc_aggressive_discharge') | float(30) %}
+                        {% set current_soc = states(sensor) | float(0) %}
+                        Battery SOC ({{ current_soc }}%) is at or below minimum aggressive discharge limit ({{ min_soc }}%).
+
+                        Mode set to idle to protect battery.
+                  - stop: "SOC below minimum aggressive discharge threshold"
+
           # Send notification if enabled
           - condition: and
             conditions:
