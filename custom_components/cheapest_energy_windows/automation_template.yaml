@@ -13,7 +13,7 @@
 # battery control commands based on your specific battery system.
 ###############################################################################
 
-alias: CEW - Battery Control Automation
+alias: CEW - Battery Control (Auto-Managed - DO NOT DELETE)
 description: Control your home battery based on Cheapest Energy Windows calculations
 mode: queued
 max: 10
@@ -111,16 +111,25 @@ action:
 
                 Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
 
-          # ADD YOUR BATTERY CHARGE ACTIONS HERE
-          # Examples:
-          # - service: switch.turn_on
-          #   target:
-          #     entity_id: switch.your_battery_charge_mode
-          # - service: number.set_value
-          #   target:
-          #     entity_id: number.your_battery_charge_power
-          #   data:
-          #     value: "{{ states('number.cew_charge_power') }}"
+          # Execute linked automation/script/scene if configured
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: >-
+                      {% set entity = states('text.cew_battery_charge_action') %}
+                      {{ entity != 'not_configured' and entity != 'unknown' and entity != '' }}
+                sequence:
+                  - service: >
+                      {% if states('text.cew_battery_charge_action').startswith('automation.') %}
+                        automation.trigger
+                      {% elif states('text.cew_battery_charge_action').startswith('script.') %}
+                        script.turn_on
+                      {% elif states('text.cew_battery_charge_action').startswith('scene.') %}
+                        scene.turn_on
+                      {% endif %}
+                    target:
+                      entity_id: "{{ states('text.cew_battery_charge_action') }}"
+            default: []
 
       #########################################################################
       # DISCHARGE State - Expensive energy window detected
@@ -245,16 +254,25 @@ action:
 
                 Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
 
-          # ADD YOUR BATTERY DISCHARGE ACTIONS HERE
-          # Examples:
-          # - service: switch.turn_on
-          #   target:
-          #     entity_id: switch.your_battery_discharge_mode
-          # - service: number.set_value
-          #   target:
-          #     entity_id: number.your_battery_discharge_power
-          #   data:
-          #     value: "{{ states('number.cew_discharge_power') }}"
+          # Execute linked automation/script/scene if configured
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: >-
+                      {% set entity = states('text.cew_battery_discharge_action') %}
+                      {{ entity != 'not_configured' and entity != 'unknown' and entity != '' }}
+                sequence:
+                  - service: >
+                      {% if states('text.cew_battery_discharge_action').startswith('automation.') %}
+                        automation.trigger
+                      {% elif states('text.cew_battery_discharge_action').startswith('script.') %}
+                        script.turn_on
+                      {% elif states('text.cew_battery_discharge_action').startswith('scene.') %}
+                        scene.turn_on
+                      {% endif %}
+                    target:
+                      entity_id: "{{ states('text.cew_battery_discharge_action') }}"
+            default: []
 
       #########################################################################
       # AGGRESSIVE DISCHARGE State - Peak price period detected
@@ -379,13 +397,25 @@ action:
 
                 Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
 
-          # ADD YOUR BATTERY AGGRESSIVE DISCHARGE ACTIONS HERE
-          # Examples:
-          # - service: number.set_value
-          #   target:
-          #     entity_id: number.your_battery_discharge_power
-          #   data:
-          #     value: "{{ states('number.cew_discharge_power') }}"
+          # Execute linked automation/script/scene if configured
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: >-
+                      {% set entity = states('text.cew_battery_aggressive_discharge_action') %}
+                      {{ entity != 'not_configured' and entity != 'unknown' and entity != '' }}
+                sequence:
+                  - service: >
+                      {% if states('text.cew_battery_aggressive_discharge_action').startswith('automation.') %}
+                        automation.trigger
+                      {% elif states('text.cew_battery_aggressive_discharge_action').startswith('script.') %}
+                        script.turn_on
+                      {% elif states('text.cew_battery_aggressive_discharge_action').startswith('scene.') %}
+                        scene.turn_on
+                      {% endif %}
+                    target:
+                      entity_id: "{{ states('text.cew_battery_aggressive_discharge_action') }}"
+            default: []
 
       #########################################################################
       # IDLE State - No charge or discharge window active
@@ -422,14 +452,25 @@ action:
 
                 Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
 
-          # ADD YOUR BATTERY IDLE/STANDBY ACTIONS HERE
-          # Examples:
-          # - service: switch.turn_off
-          #   target:
-          #     entity_id: switch.your_battery_charge_mode
-          # - service: switch.turn_off
-          #   target:
-          #     entity_id: switch.your_battery_discharge_mode
+          # Execute linked automation/script/scene if configured
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: >-
+                      {% set entity = states('text.cew_battery_idle_action') %}
+                      {{ entity != 'not_configured' and entity != 'unknown' and entity != '' }}
+                sequence:
+                  - service: >
+                      {% if states('text.cew_battery_idle_action').startswith('automation.') %}
+                        automation.trigger
+                      {% elif states('text.cew_battery_idle_action').startswith('script.') %}
+                        script.turn_on
+                      {% elif states('text.cew_battery_idle_action').startswith('scene.') %}
+                        scene.turn_on
+                      {% endif %}
+                    target:
+                      entity_id: "{{ states('text.cew_battery_idle_action') }}"
+            default: []
 
       #########################################################################
       # OFF State - CEW automation disabled

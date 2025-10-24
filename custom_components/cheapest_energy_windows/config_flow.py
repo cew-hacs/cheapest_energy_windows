@@ -320,7 +320,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.data.update(battery_data)
                 self.options.update(battery_data)
 
-            return await self.async_step_automation()
+            return await self.async_step_battery_operations()
 
         return self.async_show_form(
             step_id="battery",
@@ -359,6 +359,54 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }),
             description_placeholders={
                 "info": "Optional: Configure battery system sensors for monitoring and automation.\n\nLeave fields empty to skip battery configuration.\n\nYou can configure these later through the integration settings."
+            },
+        )
+
+    async def async_step_battery_operations(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Configure battery operation automations."""
+        if user_input is not None:
+            # Set default "not_configured" for any empty/missing fields
+            battery_ops = {
+                "battery_idle_action": user_input.get("battery_idle_action", "not_configured"),
+                "battery_charge_action": user_input.get("battery_charge_action", "not_configured"),
+                "battery_discharge_action": user_input.get("battery_discharge_action", "not_configured"),
+                "battery_aggressive_discharge_action": user_input.get("battery_aggressive_discharge_action", "not_configured"),
+            }
+            self.data.update(battery_ops)
+            return await self.async_step_automation()
+
+        return self.async_show_form(
+            step_id="battery_operations",
+            data_schema=vol.Schema({
+                vol.Optional("battery_idle_action"): selector.EntitySelector(
+                    selector.EntitySelectorConfig(
+                        domain=["automation", "script", "scene"],
+                        multiple=False,
+                    )
+                ),
+                vol.Optional("battery_charge_action"): selector.EntitySelector(
+                    selector.EntitySelectorConfig(
+                        domain=["automation", "script", "scene"],
+                        multiple=False,
+                    )
+                ),
+                vol.Optional("battery_discharge_action"): selector.EntitySelector(
+                    selector.EntitySelectorConfig(
+                        domain=["automation", "script", "scene"],
+                        multiple=False,
+                    )
+                ),
+                vol.Optional("battery_aggressive_discharge_action"): selector.EntitySelector(
+                    selector.EntitySelectorConfig(
+                        domain=["automation", "script", "scene"],
+                        multiple=False,
+                    )
+                ),
+            }),
+            description_placeholders={
+                "info": "⚙️ **Battery Operations (Optional)**\n\nLink existing automations, scripts, or scenes to battery modes. They'll be triggered automatically when modes change.\n\n**How it works:**\n- Create your battery control automations/scripts first\n- Select them from the dropdowns below\n- CEW will automatically trigger them when entering each mode\n\nLeave blank to configure later in Settings → Battery Operations."
             },
         )
 

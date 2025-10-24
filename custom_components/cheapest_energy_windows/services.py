@@ -53,11 +53,12 @@ async def async_create_notification_automation(hass: HomeAssistant) -> tuple[boo
                 if not isinstance(existing_automations, list):
                     existing_automations = [existing_automations]
 
-                # Check if automation already exists
-                for auto in existing_automations:
-                    if isinstance(auto, dict) and auto.get("id") == automation_id:
-                        _LOGGER.info(f"Automation {automation_id} already exists")
-                        return True, "Automation already exists"
+                # Remove existing automation if present (to update with latest template)
+                existing_automations = [
+                    auto for auto in existing_automations
+                    if not (isinstance(auto, dict) and auto.get("id") == automation_id)
+                ]
+                _LOGGER.info(f"Updating automation {automation_id} with latest template")
 
             except yaml.YAMLError as e:
                 _LOGGER.error(f"Error parsing existing automations.yaml: {e}")

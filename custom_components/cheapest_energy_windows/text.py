@@ -91,6 +91,43 @@ async def async_setup_entry(
             "mdi:battery",
             None
         ),
+        # Battery operation automations
+        CEWText(
+            hass,
+            config_entry,
+            "battery_idle_action",
+            "Battery Idle Action",
+            config_entry.data.get("battery_idle_action", "not_configured"),
+            "mdi:robot",
+            r"^(automation\.|script\.|scene\.)[a-z0-9_]+$|^not_configured$"
+        ),
+        CEWText(
+            hass,
+            config_entry,
+            "battery_charge_action",
+            "Battery Charge Action",
+            config_entry.data.get("battery_charge_action", "not_configured"),
+            "mdi:robot",
+            r"^(automation\.|script\.|scene\.)[a-z0-9_]+$|^not_configured$"
+        ),
+        CEWText(
+            hass,
+            config_entry,
+            "battery_discharge_action",
+            "Battery Discharge Action",
+            config_entry.data.get("battery_discharge_action", "not_configured"),
+            "mdi:robot",
+            r"^(automation\.|script\.|scene\.)[a-z0-9_]+$|^not_configured$"
+        ),
+        CEWText(
+            hass,
+            config_entry,
+            "battery_aggressive_discharge_action",
+            "Battery Aggressive Discharge Action",
+            config_entry.data.get("battery_aggressive_discharge_action", "not_configured"),
+            "mdi:robot",
+            r"^(automation\.|script\.|scene\.)[a-z0-9_]+$|^not_configured$"
+        ),
     ]
 
     async_add_entities(texts)
