@@ -393,12 +393,71 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         _LOGGER.info("Settings rotation complete")
 
+    async def handle_trigger_battery_action(call: ServiceCall) -> None:
+        """Handle triggering battery mode actions."""
+        mode = call.data.get("mode")
+
+        # Map mode to text entity
+        mode_entity_map = {
+            "idle": f"text.{PREFIX}battery_idle_action",
+            "charge": f"text.{PREFIX}battery_charge_action",
+            "discharge": f"text.{PREFIX}battery_discharge_action",
+            "aggressive_discharge": f"text.{PREFIX}battery_aggressive_discharge_action",
+            "off": f"text.{PREFIX}battery_off_action",
+        }
+
+        text_entity = mode_entity_map.get(mode)
+        if not text_entity:
+            _LOGGER.error(f"Invalid mode: {mode}")
+            return
+
+        # Get the configured automation/script/scene entity_id
+        text_state = hass.states.get(text_entity)
+        if not text_state:
+            _LOGGER.error(f"Text entity not found: {text_entity}")
+            return
+
+        target_entity = text_state.state
+        if not target_entity or target_entity == "not_configured":
+            _LOGGER.warning(f"No action configured for mode: {mode}")
+            return
+
+        # Determine service based on entity type
+        if target_entity.startswith("automation."):
+            service = "automation.trigger"
+        elif target_entity.startswith("script."):
+            service = "script.turn_on"
+        elif target_entity.startswith("scene."):
+            service = "scene.turn_on"
+        else:
+            _LOGGER.error(f"Unsupported entity type: {target_entity}")
+            return
+
+        # Call the service
+        domain, service_name = service.split(".")
+        await hass.services.async_call(
+            domain,
+            service_name,
+            {"entity_id": target_entity},
+            blocking=False,
+        )
+        _LOGGER.info(f"Triggered {mode} action: {target_entity}")
+
     # Register services
     hass.services.async_register(
         DOMAIN,
         SERVICE_ROTATE_SETTINGS,
         handle_rotate_settings,
         schema=SERVICE_ROTATE_SCHEMA,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
+        "trigger_battery_action",
+        handle_trigger_battery_action,
+        schema=vol.Schema({
+            vol.Required("mode"): vol.In(["idle", "charge", "discharge", "aggressive_discharge", "off"]),
+        }),
     )
 
     _LOGGER.info("Services registered successfully")
