@@ -313,6 +313,7 @@ class CEWCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
             "time_override_enabled": bool(options.get("time_override_enabled", False)),
             "time_override_enabled_tomorrow": bool(options.get("time_override_enabled_tomorrow", False)),
             "calculation_window_enabled": bool(options.get("calculation_window_enabled", False)),
+            "calculation_window_enabled_tomorrow": bool(options.get("calculation_window_enabled_tomorrow", False)),
             "notify_automation_disabled": bool(options.get("notify_automation_disabled", False)),
             "notify_charging": bool(options.get("notify_charging", True)),
             "notify_discharge": bool(options.get("notify_discharge", True)),
@@ -331,6 +332,8 @@ class CEWCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
             "time_override_end_tomorrow": options.get("time_override_end_tomorrow", DEFAULT_TIME_OVERRIDE_END),
             "calculation_window_start": options.get("calculation_window_start", DEFAULT_CALCULATION_WINDOW_START),
             "calculation_window_end": options.get("calculation_window_end", DEFAULT_CALCULATION_WINDOW_END),
+            "calculation_window_start_tomorrow": options.get("calculation_window_start_tomorrow", DEFAULT_CALCULATION_WINDOW_START),
+            "calculation_window_end_tomorrow": options.get("calculation_window_end_tomorrow", DEFAULT_CALCULATION_WINDOW_END),
             "quiet_hours_start": options.get("quiet_hours_start", DEFAULT_QUIET_START),
             "quiet_hours_end": options.get("quiet_hours_end", DEFAULT_QUIET_END),
         }

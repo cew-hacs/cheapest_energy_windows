@@ -154,9 +154,9 @@ class CEWBaseSensor(CoordinatorEntity, SensorEntity):
             config.get(f"price_override_threshold{suffix}", 0.15),
             config.get("pricing_window_duration", "15_minutes"),
             # Calculation window settings affect what windows are selected
-            config.get("calculation_window_enabled", False),
-            config.get("calculation_window_start", "00:00:00"),
-            config.get("calculation_window_end", "23:59:59"),
+            config.get(f"calculation_window_enabled{suffix}", False),
+            config.get(f"calculation_window_start{suffix}", "00:00:00"),
+            config.get(f"calculation_window_end{suffix}", "23:59:59"),
         ]
 
         # Add time overrides (these affect current state)

@@ -74,6 +74,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Set up services
     await async_setup_services(hass)
 
+    # Update automation template (ensures users always have latest features/fixes)
+    from .services import async_create_notification_automation
+    try:
+        success, message = await async_create_notification_automation(hass)
+        if success:
+            _LOGGER.info(f"Automation template updated: {message}")
+        else:
+            _LOGGER.warning(f"Automation template update failed: {message}")
+    except Exception as e:
+        _LOGGER.error(f"Error updating automation template: {e}")
+        # Don't fail setup if automation update fails
+
     # Set up automation handler
     automation_handler = await async_setup_automation(hass)
 

@@ -13,7 +13,7 @@
 # battery control commands based on your specific battery system.
 ###############################################################################
 
-alias: CEW - Battery Control (Auto-Managed - DO NOT DELETE)
+alias: CEW - Battery Control (Auto-Managed - DO NOT EDIT OR DELETE)
 description: Control your home battery based on Cheapest Energy Windows calculations
 mode: queued
 max: 10
@@ -80,36 +80,38 @@ action:
             id: charge_start
         sequence:
           # Send notification if enabled
-          - condition: and
-            conditions:
-              - condition: state
-                entity_id: switch.cew_notifications_enabled
-                state: 'on'
-              - condition: state
-                entity_id: switch.cew_notify_charging
-                state: 'on'
-              - condition: or
-                conditions:
+          - choose:
+              - conditions:
                   - condition: state
-                    entity_id: switch.cew_quiet_hours_enabled
-                    state: 'off'
-                  - condition: template
-                    value_template: >-
-                      {% set now_time = now().strftime('%H:%M') %}
-                      {% set quiet_start = states('time.cew_quiet_hours_start') %}
-                      {% set quiet_end = states('time.cew_quiet_hours_end') %}
-                      {{ now_time < quiet_start or now_time >= quiet_end }}
-          - service: notify.notify
-            data:
-              title: "🔋 CEW: Charging Mode Started"
-              message: >-
-                Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
+                    entity_id: switch.cew_notifications_enabled
+                    state: 'on'
+                  - condition: state
+                    entity_id: switch.cew_notify_charging
+                    state: 'on'
+                  - condition: or
+                    conditions:
+                      - condition: state
+                        entity_id: switch.cew_quiet_hours_enabled
+                        state: 'off'
+                      - condition: template
+                        value_template: >-
+                          {% set now_time = now().strftime('%H:%M') %}
+                          {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                          {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                          {{ now_time < quiet_start or now_time >= quiet_end }}
+                sequence:
+                  - service: notify.notify
+                    data:
+                      title: "🔋 CEW: Charging Mode Started"
+                      message: >-
+                        Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
 
-                Avg cheap price: €{{ state_attr('sensor.cew_today', 'avg_cheap_price') | float(0) | round(5) }}/kWh
+                        Avg cheap price: €{{ state_attr('sensor.cew_today', 'avg_cheap_price') | float(0) | round(5) }}/kWh
 
-                Charge power: {{ states('number.cew_charge_power') }}W
+                        Charge power: {{ states('number.cew_charge_power') }}W
 
-                Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+                        Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+            default: []
 
           # Execute linked automation/script/scene if configured
           - choose:
@@ -223,36 +225,38 @@ action:
                   - stop: "SOC below minimum discharge threshold"
 
           # Send notification if enabled
-          - condition: and
-            conditions:
-              - condition: state
-                entity_id: switch.cew_notifications_enabled
-                state: 'on'
-              - condition: state
-                entity_id: switch.cew_notify_discharge
-                state: 'on'
-              - condition: or
-                conditions:
+          - choose:
+              - conditions:
                   - condition: state
-                    entity_id: switch.cew_quiet_hours_enabled
-                    state: 'off'
-                  - condition: template
-                    value_template: >-
-                      {% set now_time = now().strftime('%H:%M') %}
-                      {% set quiet_start = states('time.cew_quiet_hours_start') %}
-                      {% set quiet_end = states('time.cew_quiet_hours_end') %}
-                      {{ now_time < quiet_start or now_time >= quiet_end }}
-          - service: notify.notify
-            data:
-              title: "⚡ CEW: Discharge Mode Started"
-              message: >-
-                Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
+                    entity_id: switch.cew_notifications_enabled
+                    state: 'on'
+                  - condition: state
+                    entity_id: switch.cew_notify_discharge
+                    state: 'on'
+                  - condition: or
+                    conditions:
+                      - condition: state
+                        entity_id: switch.cew_quiet_hours_enabled
+                        state: 'off'
+                      - condition: template
+                        value_template: >-
+                          {% set now_time = now().strftime('%H:%M') %}
+                          {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                          {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                          {{ now_time < quiet_start or now_time >= quiet_end }}
+                sequence:
+                  - service: notify.notify
+                    data:
+                      title: "⚡ CEW: Discharge Mode Started"
+                      message: >-
+                        Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
 
-                Avg expensive price: €{{ state_attr('sensor.cew_today', 'avg_expensive_price') | float(0) | round(5) }}/kWh
+                        Avg expensive price: €{{ state_attr('sensor.cew_today', 'avg_expensive_price') | float(0) | round(5) }}/kWh
 
-                Discharge power: {{ states('number.cew_discharge_power') }}W
+                        Discharge power: {{ states('number.cew_discharge_power') }}W
 
-                Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+                        Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+            default: []
 
           # Execute linked automation/script/scene if configured
           - choose:
@@ -366,36 +370,38 @@ action:
                   - stop: "SOC below minimum aggressive discharge threshold"
 
           # Send notification if enabled
-          - condition: and
-            conditions:
-              - condition: state
-                entity_id: switch.cew_notifications_enabled
-                state: 'on'
-              - condition: state
-                entity_id: switch.cew_notify_discharge_aggressive
-                state: 'on'
-              - condition: or
-                conditions:
+          - choose:
+              - conditions:
                   - condition: state
-                    entity_id: switch.cew_quiet_hours_enabled
-                    state: 'off'
-                  - condition: template
-                    value_template: >-
-                      {% set now_time = now().strftime('%H:%M') %}
-                      {% set quiet_start = states('time.cew_quiet_hours_start') %}
-                      {% set quiet_end = states('time.cew_quiet_hours_end') %}
-                      {{ now_time < quiet_start or now_time >= quiet_end }}
-          - service: notify.notify
-            data:
-              title: "🚨 CEW: Aggressive Discharge Started"
-              message: >-
-                Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
+                    entity_id: switch.cew_notifications_enabled
+                    state: 'on'
+                  - condition: state
+                    entity_id: switch.cew_notify_discharge_aggressive
+                    state: 'on'
+                  - condition: or
+                    conditions:
+                      - condition: state
+                        entity_id: switch.cew_quiet_hours_enabled
+                        state: 'off'
+                      - condition: template
+                        value_template: >-
+                          {% set now_time = now().strftime('%H:%M') %}
+                          {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                          {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                          {{ now_time < quiet_start or now_time >= quiet_end }}
+                sequence:
+                  - service: notify.notify
+                    data:
+                      title: "🚨 CEW: Aggressive Discharge Started"
+                      message: >-
+                        Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
 
-                Avg expensive price: €{{ state_attr('sensor.cew_today', 'avg_expensive_price') | float(0) | round(5) }}/kWh
+                        Avg expensive price: €{{ state_attr('sensor.cew_today', 'avg_expensive_price') | float(0) | round(5) }}/kWh
 
-                Max discharge power: {{ states('number.cew_discharge_power') }}W
+                        Max discharge power: {{ states('number.cew_discharge_power') }}W
 
-                Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+                        Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+            default: []
 
           # Execute linked automation/script/scene if configured
           - choose:
@@ -425,32 +431,34 @@ action:
             id: idle_start
         sequence:
           # Send notification if enabled
-          - condition: and
-            conditions:
-              - condition: state
-                entity_id: switch.cew_notifications_enabled
-                state: 'on'
-              - condition: state
-                entity_id: switch.cew_notify_idle
-                state: 'on'
-              - condition: or
-                conditions:
+          - choose:
+              - conditions:
                   - condition: state
-                    entity_id: switch.cew_quiet_hours_enabled
-                    state: 'off'
-                  - condition: template
-                    value_template: >-
-                      {% set now_time = now().strftime('%H:%M') %}
-                      {% set quiet_start = states('time.cew_quiet_hours_start') %}
-                      {% set quiet_end = states('time.cew_quiet_hours_end') %}
-                      {{ now_time < quiet_start or now_time >= quiet_end }}
-          - service: notify.notify
-            data:
-              title: "💤 CEW: Normal/idle Mode Started"
-              message: >-
-                Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
+                    entity_id: switch.cew_notifications_enabled
+                    state: 'on'
+                  - condition: state
+                    entity_id: switch.cew_notify_idle
+                    state: 'on'
+                  - condition: or
+                    conditions:
+                      - condition: state
+                        entity_id: switch.cew_quiet_hours_enabled
+                        state: 'off'
+                      - condition: template
+                        value_template: >-
+                          {% set now_time = now().strftime('%H:%M') %}
+                          {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                          {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                          {{ now_time < quiet_start or now_time >= quiet_end }}
+                sequence:
+                  - service: notify.notify
+                    data:
+                      title: "💤 CEW: Normal/idle Mode Started"
+                      message: >-
+                        Current price: €{{ state_attr('sensor.cew_today', 'current_price') | float(0) | round(5) }}/kWh
 
-                Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+                        Spread: {{ state_attr('sensor.cew_today', 'spread_avg') | float(0) | round(1) }}%
+            default: []
 
           # Execute linked automation/script/scene if configured
           - choose:
@@ -480,30 +488,32 @@ action:
             id: automation_disabled
         sequence:
           # Send notification if enabled
-          - condition: and
-            conditions:
-              - condition: state
-                entity_id: switch.cew_notifications_enabled
-                state: 'on'
-              - condition: state
-                entity_id: switch.cew_notify_automation_disabled
-                state: 'on'
-              - condition: or
-                conditions:
+          - choose:
+              - conditions:
                   - condition: state
-                    entity_id: switch.cew_quiet_hours_enabled
-                    state: 'off'
-                  - condition: template
-                    value_template: >-
-                      {% set now_time = now().strftime('%H:%M') %}
-                      {% set quiet_start = states('time.cew_quiet_hours_start') %}
-                      {% set quiet_end = states('time.cew_quiet_hours_end') %}
-                      {{ now_time < quiet_start or now_time >= quiet_end }}
-          - service: notify.notify
-            data:
-              title: "⛔ CEW: Automation Disabled"
-              message: >-
-                CEW automation has been turned off.
+                    entity_id: switch.cew_notifications_enabled
+                    state: 'on'
+                  - condition: state
+                    entity_id: switch.cew_notify_automation_disabled
+                    state: 'on'
+                  - condition: or
+                    conditions:
+                      - condition: state
+                        entity_id: switch.cew_quiet_hours_enabled
+                        state: 'off'
+                      - condition: template
+                        value_template: >-
+                          {% set now_time = now().strftime('%H:%M') %}
+                          {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                          {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                          {{ now_time < quiet_start or now_time >= quiet_end }}
+                sequence:
+                  - service: notify.notify
+                    data:
+                      title: "⛔ CEW: Automation Disabled"
+                      message: >-
+                        CEW automation has been turned off.
+            default: []
 
           # Execute linked automation/script/scene if configured
           - choose:

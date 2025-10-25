@@ -40,6 +40,7 @@ async def async_setup_entry(
         ("time_override_enabled", "Time Override Enabled", False, "mdi:clock-edit"),
         ("time_override_enabled_tomorrow", "Time Override Enabled Tomorrow", False, "mdi:clock-edit"),
         ("calculation_window_enabled", "Calculation Window Enabled", False, "mdi:window-closed-variant"),
+        ("calculation_window_enabled_tomorrow", "Calculation Window Enabled Tomorrow", False, "mdi:window-open-variant"),
         ("notify_automation_disabled", "Notify Automation Disabled", True, "mdi:bell-off"),
         ("notify_charging", "Notify Charging", True, "mdi:battery-charging"),
         ("notify_discharge", "Notify Discharge", True, "mdi:battery-arrow-up"),

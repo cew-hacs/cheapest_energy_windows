@@ -85,11 +85,11 @@ class WindowCalculationEngine:
             _LOGGER.warning("No prices to process")
             return self._empty_result(is_tomorrow)
 
-        # Apply calculation window filter if enabled
-        calc_window_enabled = config.get("calculation_window_enabled", False)
+        # Apply calculation window filter if enabled (use suffix for tomorrow settings)
+        calc_window_enabled = config.get(f"calculation_window_enabled{suffix}", False)
         if calc_window_enabled:
-            calc_window_start = config.get("calculation_window_start", "00:00:00")
-            calc_window_end = config.get("calculation_window_end", "23:59:59")
+            calc_window_start = config.get(f"calculation_window_start{suffix}", "00:00:00")
+            calc_window_end = config.get(f"calculation_window_end{suffix}", "23:59:59")
             _LOGGER.warning(f"Calculation window ENABLED: {calc_window_start} - {calc_window_end}, filtering {len(processed_prices)} prices")
             processed_prices = self._filter_prices_by_calculation_window(
                 processed_prices,
