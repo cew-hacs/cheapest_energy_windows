@@ -614,7 +614,8 @@ class WindowCalculationEngine:
         charge_windows: List[Dict[str, Any]],
         discharge_windows: List[Dict[str, Any]],
         aggressive_windows: List[Dict[str, Any]],
-        config: Dict[str, Any]
+        config: Dict[str, Any],
+        is_tomorrow: bool = False
     ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """Calculate actual charge/discharge windows considering time and price overrides.
 
@@ -625,22 +626,33 @@ class WindowCalculationEngine:
         - Price override: if price drops below threshold, those periods become charge windows
           even if not in calculated windows.
 
+        Args:
+            prices: List of processed price data
+            charge_windows: Calculated charge windows
+            discharge_windows: Calculated discharge windows
+            aggressive_windows: Calculated aggressive discharge windows
+            config: Configuration dictionary
+            is_tomorrow: Whether calculating for tomorrow (affects config key suffix)
+
         Returns:
             Tuple of (actual_charge_windows, actual_discharge_windows)
         """
+        # Use tomorrow's config if applicable
+        suffix = "_tomorrow" if is_tomorrow and config.get("tomorrow_settings_enabled", False) else ""
+
         # Check if any override is enabled
-        time_override_enabled = config.get("time_override_enabled", False)
-        price_override_enabled = config.get("price_override_enabled", False)
+        time_override_enabled = config.get(f"time_override_enabled{suffix}", False)
+        price_override_enabled = config.get(f"price_override_enabled{suffix}", False)
 
         if not time_override_enabled and not price_override_enabled:
             # No overrides, return calculated windows as-is (don't combine normal + aggressive)
             return list(charge_windows), list(discharge_windows)
 
-        # Get override configuration
-        override_start_str = config.get("time_override_start", "")
-        override_end_str = config.get("time_override_end", "")
-        override_mode = config.get("time_override_mode", MODE_IDLE)
-        price_override_threshold = config.get("price_override_threshold", 0.15)
+        # Get override configuration (using suffix for tomorrow settings)
+        override_start_str = config.get(f"time_override_start{suffix}", "")
+        override_end_str = config.get(f"time_override_end{suffix}", "")
+        override_mode = config.get(f"time_override_mode{suffix}", MODE_IDLE)
+        price_override_threshold = config.get(f"price_override_threshold{suffix}", 0.15)
 
         # Validate time override config if enabled
         if time_override_enabled and (not override_start_str or not override_end_str):
@@ -730,7 +742,8 @@ class WindowCalculationEngine:
             charge_windows,
             discharge_windows,
             aggressive_windows,
-            config
+            config,
+            is_tomorrow
         )
 
         # Count completed windows (use actual windows to include price/time overrides)
