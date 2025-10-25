@@ -88,6 +88,9 @@ class AutomationHandler:
             # Fire event for any listeners
             self.hass.bus.async_fire(EVENT_SETTINGS_ROTATED)
 
+            # Send notification if enabled
+            await self._send_rotation_notification()
+
             _LOGGER.info("Midnight settings rotation complete")
 
         # Schedule rotation at midnight
@@ -146,6 +149,51 @@ class AutomationHandler:
         self.hass.config_entries.async_update_entry(entry, options=new_options)
 
         _LOGGER.info(f"Rotated {len(settings_map)} settings from tomorrow to today")
+
+    async def _send_rotation_notification(self) -> None:
+        """Send midnight rotation notification if enabled."""
+        # Check if global notifications are enabled
+        if not self.hass.states.is_state(f"switch.{PREFIX}notifications_enabled", STATE_ON):
+            _LOGGER.debug("Global notifications disabled, skipping rotation notification")
+            return
+
+        # Check if midnight rotation notifications are enabled
+        if not self.hass.states.is_state(f"switch.{PREFIX}midnight_rotation_notifications", STATE_ON):
+            _LOGGER.debug("Midnight rotation notifications disabled")
+            return
+
+        # Check quiet hours
+        if self.hass.states.is_state(f"switch.{PREFIX}quiet_hours_enabled", STATE_ON):
+            now_time = datetime.now().strftime('%H:%M')
+            quiet_start_state = self.hass.states.get(f"time.{PREFIX}quiet_hours_start")
+            quiet_end_state = self.hass.states.get(f"time.{PREFIX}quiet_hours_end")
+
+            if quiet_start_state and quiet_end_state:
+                quiet_start = quiet_start_state.state
+                quiet_end = quiet_end_state.state
+
+                # Check if current time is within quiet hours
+                if quiet_start < quiet_end:
+                    # Normal case: quiet hours don't cross midnight
+                    if quiet_start <= now_time < quiet_end:
+                        _LOGGER.debug("Within quiet hours, skipping notification")
+                        return
+                else:
+                    # Quiet hours cross midnight
+                    if now_time >= quiet_start or now_time < quiet_end:
+                        _LOGGER.debug("Within quiet hours, skipping notification")
+                        return
+
+        # Send the notification
+        await self.hass.services.async_call(
+            "notify",
+            "notify",
+            {
+                "title": "CEW Settings Rotated",
+                "message": "Tomorrow's settings have been applied to today",
+            },
+        )
+        _LOGGER.info("Sent midnight rotation notification")
 
     async def _setup_state_listener(self) -> None:
         """Set up state change listener for the cew_today sensor."""

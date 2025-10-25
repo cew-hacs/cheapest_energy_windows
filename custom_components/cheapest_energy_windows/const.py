@@ -16,9 +16,9 @@ CONF_TAX: Final = "tax"
 CONF_ADDITIONAL_COST: Final = "additional_cost"
 CONF_BATTERY_SYSTEM_NAME: Final = "battery_system_name"
 CONF_BATTERY_SOC_SENSOR: Final = "battery_soc_sensor"
-CONF_BATTERY_ENERGY_SENSOR: Final = "battery_energy_sensor"
-CONF_BATTERY_CHARGE_SENSOR: Final = "battery_charge_sensor"
-CONF_BATTERY_DISCHARGE_SENSOR: Final = "battery_discharge_sensor"
+CONF_BATTERY_ENERGY_SENSOR: Final = "battery_available_energy_sensor"
+CONF_BATTERY_CHARGE_SENSOR: Final = "battery_daily_charge_sensor"
+CONF_BATTERY_DISCHARGE_SENSOR: Final = "battery_daily_discharge_sensor"
 CONF_BATTERY_POWER_SENSOR: Final = "battery_power_sensor"
 
 # Default values
