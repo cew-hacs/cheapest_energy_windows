@@ -217,7 +217,7 @@ class CEWTodaySensor(CEWBaseSensor):
         # Check if calculation-affecting config changed
         current_calc_config_hash = self._calc_config_hash(config, is_tomorrow=False)
         calc_config_changed = (
-            self._previous_calc_config_hash is not None and
+            self._previous_calc_config_hash is None or
             self._previous_calc_config_hash != current_calc_config_hash
         )
 
@@ -394,7 +394,7 @@ class CEWTomorrowSensor(CEWBaseSensor):
         # Check if calculation-affecting config changed
         current_calc_config_hash = self._calc_config_hash(config, is_tomorrow=True)
         calc_config_changed = (
-            self._previous_calc_config_hash is not None and
+            self._previous_calc_config_hash is None or
             self._previous_calc_config_hash != current_calc_config_hash
         )
 
