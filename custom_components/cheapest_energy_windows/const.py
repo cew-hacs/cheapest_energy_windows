@@ -65,9 +65,10 @@ MODE_IDLE: Final = "idle"
 MODE_CHARGE: Final = "charge"
 MODE_DISCHARGE: Final = "discharge"
 MODE_DISCHARGE_AGGRESSIVE: Final = "discharge_aggressive"
+MODE_OFF: Final = "off"
 
 # Time override modes list
-TIME_OVERRIDE_MODES: Final = [MODE_IDLE, MODE_CHARGE, MODE_DISCHARGE, MODE_DISCHARGE_AGGRESSIVE]
+TIME_OVERRIDE_MODES: Final = [MODE_IDLE, MODE_CHARGE, MODE_DISCHARGE, MODE_DISCHARGE_AGGRESSIVE, MODE_OFF]
 
 # Pricing window duration options
 PRICING_15_MINUTES: Final = "15_minutes"
@@ -188,6 +189,7 @@ NON_CALCULATION_KEYS: Final = {
     "notify_discharge",
     "notify_discharge_aggressive",
     "notify_idle",
+    "notify_off",
 
     # Battery system tracking (display only)
     "battery_system_name",

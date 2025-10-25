@@ -16,6 +16,7 @@ from .const import (
     MODE_DISCHARGE,
     MODE_DISCHARGE_AGGRESSIVE,
     MODE_IDLE,
+    MODE_OFF,
     STATE_CHARGE,
     STATE_DISCHARGE,
     STATE_DISCHARGE_AGGRESSIVE,
@@ -605,6 +606,7 @@ class WindowCalculationEngine:
             MODE_CHARGE: STATE_CHARGE,
             MODE_DISCHARGE: STATE_DISCHARGE,
             MODE_DISCHARGE_AGGRESSIVE: STATE_DISCHARGE_AGGRESSIVE,
+            MODE_OFF: STATE_OFF,
         }
         return mode_map.get(mode, STATE_IDLE)
 

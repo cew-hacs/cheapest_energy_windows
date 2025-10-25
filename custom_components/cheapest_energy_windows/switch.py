@@ -46,6 +46,7 @@ async def async_setup_entry(
         ("notify_discharge", "Notify Discharge", True, "mdi:battery-arrow-up"),
         ("notify_discharge_aggressive", "Notify Discharge Aggressive", True, "mdi:battery-alert"),
         ("notify_idle", "Notify Idle", True, "mdi:battery"),
+        ("notify_off", "Notify Off", True, "mdi:battery-off"),
         ("battery_use_soc_safety", "Battery Use SOC Safety", False, "mdi:shield-battery"),
     ]
 
