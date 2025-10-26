@@ -64,11 +64,16 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
             raise ValueError(f"Price sensor {price_sensor} has no attributes")
 
         attrs = sensor_state.attributes
-        if 'raw_today' not in attrs:
-            raise ValueError(f"Price sensor {price_sensor} missing 'raw_today' attribute")
 
-        # Check if sensor uses cents instead of EUR/kWh
-        if attrs.get('price_in_cents') is True:
+        # Check for either Nord Pool or ENTSO-E format
+        has_nordpool = 'raw_today' in attrs and 'raw_tomorrow' in attrs
+        has_entsoe = 'prices_today' in attrs or 'prices_tomorrow' in attrs
+
+        if not has_nordpool and not has_entsoe:
+            raise ValueError(f"Price sensor {price_sensor} missing required attributes. Need either 'raw_today'/'raw_tomorrow' (Nord Pool) or 'prices_today'/'prices_tomorrow' (ENTSO-E)")
+
+        # ENTSO-E sensors don't have price_in_cents, only check for Nord Pool
+        if has_nordpool and attrs.get('price_in_cents') is True:
             raise ValueError(f"Price sensor {price_sensor} uses cents/kWh. Only EUR/kWh sensors are supported.")
 
     return {"title": "Cheapest Energy Windows"}
@@ -114,13 +119,25 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_price_sensor"
                 _LOGGER.error(f"Price sensor validation failed: {e}")
 
-        # Try to auto-detect price sensors
+        # Try to auto-detect price sensors (both Nord Pool and ENTSO-E formats)
         price_sensors = []
+        entsoe_sensors = []
+        nordpool_sensors = []
+
         for state in self.hass.states.async_all("sensor"):
-            if state.attributes.get("raw_today") is not None:
-                # Exclude sensors with price_in_cents enabled
-                if state.attributes.get("price_in_cents") is True:
+            attrs = state.attributes
+
+            # Check for Nord Pool format
+            if attrs.get("raw_today") is not None:
+                # Exclude sensors with price_in_cents
+                if attrs.get("price_in_cents") is True:
                     continue
+                nordpool_sensors.append(state.entity_id)
+                price_sensors.append(state.entity_id)
+
+            # Check for ENTSO-E format
+            elif attrs.get("prices_today") is not None:
+                entsoe_sensors.append(state.entity_id)
                 price_sensors.append(state.entity_id)
 
         # Show error if no sensors found
@@ -133,6 +150,19 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     "info": "⚠️ No compatible price sensors found!\n\nPlease install the Nordpool integration from HACS first:\n1. Go to HACS → Integrations\n2. Search for 'Nordpool'\n3. Install and configure it\n4. Return here to continue setup\n\nThe sensor must have a 'raw_today' attribute with hourly or 15-minute price data."
                 },
             )
+
+        # Build sensor list with format indicators
+        sensor_list = []
+        for sensor in price_sensors[:5]:
+            if sensor in entsoe_sensors:
+                sensor_list.append(f"- {sensor} (ENTSO-E)")
+            else:
+                sensor_list.append(f"- {sensor} (Nord Pool)")
+
+        # Add sensor format notes
+        sensor_note = ""
+        if nordpool_sensors or entsoe_sensors:
+            sensor_note = "\n\n📝 **Sensor Requirements:**\n• **15-minute interval sensor required** - The integration needs 15-minute price data for optimal window calculation\n• If you have hourly pricing contracts, the system will automatically aggregate 15-minute data into hourly windows\n• Both Nord Pool and ENTSO-E 15-minute sensors are supported"
 
         # Show available sensors for selection (no default)
         return self.async_show_form(
@@ -147,7 +177,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }),
             errors=errors,
             description_placeholders={
-                "info": f"✅ Detected {len(price_sensors)} compatible price sensor(s)\n\n⚠️ **IMPORTANT - Price Unit Requirement:**\nYour price sensor MUST use EUR/kWh (e.g., 0.25), NOT cents (e.g., 25).\nSensors configured for cents/kWh are currently not supported and will cause incorrect calculations.\n\nPlease select your price sensor:\n{chr(10).join('- ' + s for s in price_sensors[:5])}\n\nThe sensor must have 'raw_today' attribute with hourly or 15-minute price data."
+                "info": f"✅ Detected {len(price_sensors)} compatible price sensor(s)\n\n⚠️ **IMPORTANT - Price Unit Requirement:**\nYour price sensor MUST use EUR/kWh (e.g., 0.25), NOT cents (e.g., 25).\nSensors configured for cents/kWh are currently not supported and will cause incorrect calculations.\n\nPlease select your price sensor:\n{chr(10).join(sensor_list)}\n\nSupported sensor formats:\n• Nord Pool: 'raw_today'/'raw_tomorrow' attributes\n• ENTSO-E: 'prices_today'/'prices_tomorrow' attributes{sensor_note}"
             },
         )
 
@@ -300,7 +330,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
             }),
             description_placeholders={
-                "info": f"Configure pricing window duration and optimization settings.\n\n15 Minutes: More granular optimization (use if your contract has 15-minute pricing)\n1 Hour: Standard hourly optimization (use if your contract has hourly pricing)\n\nSpread settings control when to charge/discharge based on price differences.\n\nPrice Override: Always charge when price is below threshold, regardless of spread/windows.\n\nDefaults:\n- Charging Windows: {DEFAULT_CHARGING_WINDOWS}\n- Discharge Windows: {DEFAULT_EXPENSIVE_WINDOWS}\n- Percentiles: {DEFAULT_CHEAP_PERCENTILE}% cheap, {DEFAULT_EXPENSIVE_PERCENTILE}% expensive\n- Min Spreads: {DEFAULT_MIN_SPREAD}% charge, {DEFAULT_MIN_SPREAD_DISCHARGE}% discharge, {DEFAULT_AGGRESSIVE_DISCHARGE_SPREAD}% aggressive\n- Price Override: Disabled, €{DEFAULT_PRICE_OVERRIDE_THRESHOLD}/kWh"
+                "info": f"Configure pricing window duration and optimization settings.\n\n📊 **Window Duration Selection:**\n• **15 Minutes**: For contracts with 15-minute pricing intervals\n• **1 Hour**: For contracts with hourly pricing intervals\n\n⚠️ **Note**: You must have a 15-minute interval price sensor even if selecting 1-hour windows. The system will automatically aggregate the 15-minute data into hourly windows.\n\nSpread settings control when to charge/discharge based on price differences.\n\nPrice Override: Always charge when price is below threshold, regardless of spread/windows.\n\nDefaults:\n- Charging Windows: {DEFAULT_CHARGING_WINDOWS}\n- Discharge Windows: {DEFAULT_EXPENSIVE_WINDOWS}\n- Percentiles: {DEFAULT_CHEAP_PERCENTILE}% cheap, {DEFAULT_EXPENSIVE_PERCENTILE}% expensive\n- Min Spreads: {DEFAULT_MIN_SPREAD}% charge, {DEFAULT_MIN_SPREAD_DISCHARGE}% discharge, {DEFAULT_AGGRESSIVE_DISCHARGE_SPREAD}% aggressive\n- Price Override: Disabled, €{DEFAULT_PRICE_OVERRIDE_THRESHOLD}/kWh"
             },
         )
 

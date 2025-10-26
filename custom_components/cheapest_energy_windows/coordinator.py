@@ -38,10 +38,6 @@ class CEWCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
         self.config_entry = config_entry
         self.price_sensor = config_entry.data.get(CONF_PRICE_SENSOR, DEFAULT_PRICE_SENSOR)
 
-        # Cache for price sensor entity ID (from input_text)
-        self._price_sensor_entity: Optional[str] = None
-        self._last_price_sensor_check: Optional[datetime] = None
-
         # Track previous price data to detect changes (Layer 2)
         # Store in hass.data to persist across integration reloads
         persistent_key = f"{DOMAIN}_{config_entry.entry_id}_price_state"
@@ -69,13 +65,10 @@ class CEWCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
         _LOGGER.info("="*60)
 
         try:
-            # Get the price sensor entity ID from input_text (user configurable)
-            price_sensor = await self._get_price_sensor_entity()
-            _LOGGER.info(f"Price sensor entity ID: {price_sensor}")
-
-            if not price_sensor:
-                _LOGGER.warning("No price sensor configured, returning empty data")
-                return await self._empty_data("No price sensor configured")
+            # Always use the proxy sensor which normalizes different price sensor formats
+            # The proxy sensor handles both Nord Pool and ENTSO-E formats
+            price_sensor = "sensor.cew_price_sensor_proxy"
+            _LOGGER.info(f"Using proxy price sensor: {price_sensor}")
 
             # Get the price sensor state
             price_state = self.hass.states.get(price_sensor)
@@ -208,26 +201,6 @@ class CEWCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
             _LOGGER.info("="*60)
             raise UpdateFailed(f"Error fetching data: {e}") from e
 
-    async def _get_price_sensor_entity(self) -> Optional[str]:
-        """Get the configured price sensor entity ID."""
-        # Check cache (refresh every 5 minutes)
-        now = datetime.now()
-        if self._price_sensor_entity and self._last_price_sensor_check:
-            if now - self._last_price_sensor_check < timedelta(minutes=5):
-                return self._price_sensor_entity
-
-        # Get from text entity
-        text_entity = f"text.{PREFIX}price_sensor_entity"
-        state = self.hass.states.get(text_entity)
-
-        if state and state.state and state.state not in ["", "unknown", "unavailable", "none"]:
-            self._price_sensor_entity = state.state
-        else:
-            # Fall back to config entry
-            self._price_sensor_entity = self.price_sensor
-
-        self._last_price_sensor_check = now
-        return self._price_sensor_entity
 
     async def _get_configuration(self) -> Dict[str, Any]:
         """Get current configuration from config entry options.

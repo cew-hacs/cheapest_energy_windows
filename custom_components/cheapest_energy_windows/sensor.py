@@ -531,6 +531,67 @@ class CEWPriceSensorProxy(SensorEntity):
         """No polling needed - updates come from coordinator."""
         return False
 
+    def _detect_sensor_format(self, attributes):
+        """Detect sensor format type."""
+        if "raw_today" in attributes and "raw_tomorrow" in attributes:
+            return "nordpool"
+        elif "prices_today" in attributes or "prices_tomorrow" in attributes:
+            return "entsoe"
+        # Future: Add more formats here
+        return None
+
+    def _normalize_entsoe_to_nordpool(self, attributes):
+        """Convert ENTSO-E format to Nord Pool format."""
+        from datetime import timedelta
+        normalized = {}
+
+        # Convert prices_today to raw_today
+        if "prices_today" in attributes and attributes["prices_today"]:
+            raw_today = []
+            for item in attributes["prices_today"]:
+                time_str = item.get("time", "")
+                parsed = dt_util.parse_datetime(time_str)
+                if parsed:
+                    # Convert UTC to local timezone
+                    local_time = dt_util.as_local(parsed)
+                    end_time = local_time + timedelta(minutes=15)
+                    raw_today.append({
+                        "start": local_time.isoformat(),
+                        "end": end_time.isoformat(),
+                        "value": item.get("price", 0)
+                    })
+            normalized["raw_today"] = raw_today
+        else:
+            normalized["raw_today"] = []
+
+        # Convert prices_tomorrow to raw_tomorrow
+        if "prices_tomorrow" in attributes and attributes["prices_tomorrow"]:
+            raw_tomorrow = []
+            for item in attributes["prices_tomorrow"]:
+                time_str = item.get("time", "")
+                parsed = dt_util.parse_datetime(time_str)
+                if parsed:
+                    # Convert UTC to local timezone
+                    local_time = dt_util.as_local(parsed)
+                    end_time = local_time + timedelta(minutes=15)
+                    raw_tomorrow.append({
+                        "start": local_time.isoformat(),
+                        "end": end_time.isoformat(),
+                        "value": item.get("price", 0)
+                    })
+            normalized["raw_tomorrow"] = raw_tomorrow
+            normalized["tomorrow_valid"] = True
+        else:
+            normalized["raw_tomorrow"] = []
+            normalized["tomorrow_valid"] = False
+
+        # Pass through other attributes we might need
+        for key, value in attributes.items():
+            if key not in ["prices_today", "prices_tomorrow", "prices", "raw_prices"]:
+                normalized[key] = value
+
+        return normalized
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -559,8 +620,18 @@ class CEWPriceSensorProxy(SensorEntity):
         # Mirror the state
         self._attr_native_value = price_sensor.state
 
-        # Mirror all attributes (especially raw_today and raw_tomorrow for Nord Pool)
-        self._attr_extra_state_attributes = dict(price_sensor.attributes)
+        # Detect format and normalize if needed
+        sensor_format = self._detect_sensor_format(price_sensor.attributes)
+
+        if sensor_format == "entsoe":
+            _LOGGER.debug(f"Detected ENTSO-E format from {price_sensor_id}, normalizing to Nord Pool format")
+            self._attr_extra_state_attributes = self._normalize_entsoe_to_nordpool(price_sensor.attributes)
+        elif sensor_format == "nordpool":
+            _LOGGER.debug(f"Detected Nord Pool format from {price_sensor_id}, passing through")
+            self._attr_extra_state_attributes = dict(price_sensor.attributes)
+        else:
+            _LOGGER.warning(f"Unknown price sensor format from {price_sensor_id}, passing through as-is")
+            self._attr_extra_state_attributes = dict(price_sensor.attributes)
 
         _LOGGER.debug(f"Proxy sensor updated from {price_sensor_id}, state: {self._attr_native_value}")
         self.async_write_ha_state()
