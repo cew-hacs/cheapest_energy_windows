@@ -122,6 +122,9 @@ class AutomationHandler:
             "time_override_start": "time_override_start_tomorrow",
             "time_override_end": "time_override_end_tomorrow",
             "time_override_mode": "time_override_mode_tomorrow",
+            "calculation_window_enabled": "calculation_window_enabled_tomorrow",
+            "calculation_window_start": "calculation_window_start_tomorrow",
+            "calculation_window_end": "calculation_window_end_tomorrow",
         }
 
         # Get config entry
