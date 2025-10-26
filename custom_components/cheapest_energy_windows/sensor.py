@@ -71,6 +71,7 @@ async def async_setup_entry(
     sensors = [
         CEWTodaySensor(coordinator, config_entry),
         CEWTomorrowSensor(coordinator, config_entry),
+        CEWPriceSensorProxy(hass, coordinator, config_entry),
     ]
 
     async_add_entities(sensors)
@@ -484,3 +485,90 @@ class CEWTomorrowSensor(CEWBaseSensor):
             ATTR_AVG_EXPENSIVE_PRICE: result.get("avg_expensive_price", 0.0),
             "last_config_update": last_config_update.isoformat() if last_config_update else None,
         }
+
+
+class CEWPriceSensorProxy(SensorEntity):
+    """Proxy sensor that mirrors the configured price sensor.
+
+    This allows the dashboard to use a consistent sensor entity_id
+    regardless of which price sensor the user has configured.
+    """
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        coordinator: CEWCoordinator,
+        config_entry: ConfigEntry,
+    ) -> None:
+        """Initialize the proxy sensor."""
+        self.hass = hass
+        self.coordinator = coordinator
+        self.config_entry = config_entry
+
+        self._attr_unique_id = f"{PREFIX}price_sensor_proxy"
+        self._attr_name = "CEW Price Sensor Proxy"
+        self._attr_has_entity_name = False
+        self._attr_native_value = None
+        self._attr_extra_state_attributes = {}
+
+        _LOGGER.debug("Price sensor proxy initialized")
+
+    @property
+    def device_info(self):
+        """Return device information."""
+        return {
+            "identifiers": {(DOMAIN, self.config_entry.entry_id)},
+            "name": "Cheapest Energy Windows",
+            "manufacturer": "Community",
+            "model": "Energy Optimizer",
+            "sw_version": "1.0.0",
+        }
+
+    @property
+    def should_poll(self) -> bool:
+        """No polling needed - updates come from coordinator."""
+        return False
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        if not self.coordinator.data:
+            return
+
+        # Get the configured price sensor entity_id
+        price_sensor_entity = self.hass.states.get(f"text.{PREFIX}price_sensor_entity")
+        if not price_sensor_entity:
+            _LOGGER.warning("Price sensor entity text input not found")
+            return
+
+        price_sensor_id = price_sensor_entity.state
+        if not price_sensor_id or price_sensor_id == "":
+            _LOGGER.warning("Price sensor entity not configured")
+            return
+
+        # Get the actual price sensor state
+        price_sensor = self.hass.states.get(price_sensor_id)
+        if not price_sensor:
+            _LOGGER.warning(f"Configured price sensor {price_sensor_id} not found")
+            self._attr_native_value = STATE_UNAVAILABLE
+            self.async_write_ha_state()
+            return
+
+        # Mirror the state
+        self._attr_native_value = price_sensor.state
+
+        # Mirror all attributes (especially raw_today and raw_tomorrow for Nord Pool)
+        self._attr_extra_state_attributes = dict(price_sensor.attributes)
+
+        _LOGGER.debug(f"Proxy sensor updated from {price_sensor_id}, state: {self._attr_native_value}")
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """When entity is added to hass."""
+        # Subscribe to coordinator updates
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self._handle_coordinator_update)
+        )
+
+        # Do initial update
+        self._handle_coordinator_update()
