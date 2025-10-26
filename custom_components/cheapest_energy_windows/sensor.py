@@ -4,6 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import logging
 from typing import Any, Dict, List, Optional
+import uuid
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -72,6 +73,7 @@ async def async_setup_entry(
         CEWTodaySensor(coordinator, config_entry),
         CEWTomorrowSensor(coordinator, config_entry),
         CEWPriceSensorProxy(hass, coordinator, config_entry),
+        CEWLastCalculationSensor(coordinator, config_entry),
     ]
 
     async_add_entities(sensors)
@@ -562,6 +564,72 @@ class CEWPriceSensorProxy(SensorEntity):
 
         _LOGGER.debug(f"Proxy sensor updated from {price_sensor_id}, state: {self._attr_native_value}")
         self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """When entity is added to hass."""
+        # Subscribe to coordinator updates
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self._handle_coordinator_update)
+        )
+
+        # Do initial update
+        self._handle_coordinator_update()
+
+
+class CEWLastCalculationSensor(CoordinatorEntity, SensorEntity):
+    """Sensor that tracks calculation updates with unique state values.
+
+    This sensor generates a unique random value on every coordinator update
+    to trigger chart refreshes via a hidden series in the dashboard.
+    Using random values ensures state changes are always detected,
+    even with rapid consecutive updates.
+    """
+
+    def __init__(
+        self,
+        coordinator: CEWCoordinator,
+        config_entry: ConfigEntry,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self.config_entry = config_entry
+        self._attr_unique_id = f"{PREFIX}last_calculation"
+        self._attr_name = "CEW Last Calculation"
+        self._attr_has_entity_name = False
+        self._attr_icon = "mdi:refresh"
+
+        # Initialize with random value
+        self._attr_native_value = str(uuid.uuid4())[:8]
+
+    @property
+    def device_info(self):
+        """Return device information."""
+        return {
+            "identifiers": {(DOMAIN, self.config_entry.entry_id)},
+            "name": "Cheapest Energy Windows",
+            "manufacturer": "Community",
+            "model": "Energy Optimizer",
+            "sw_version": "1.0.0",
+        }
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        if not self.coordinator.data:
+            return
+
+        # Only update when calculations actually change
+        # Coordinator polls every 10s for state transitions, but this sensor
+        # only updates when price data changes or config changes to avoid
+        # unnecessary chart refreshes
+        price_data_changed = self.coordinator.data.get("price_data_changed", False)
+        config_changed = self.coordinator.data.get("config_changed", False)
+
+        if price_data_changed or config_changed:
+            # Actual calculation occurred - generate new unique value
+            self._attr_native_value = str(uuid.uuid4())[:8]
+            self.async_write_ha_state()
+            _LOGGER.debug(f"Last calculation updated: {self._attr_native_value} (price_changed={price_data_changed}, config_changed={config_changed})")
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""

@@ -42,10 +42,6 @@ class CEWCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
         self._price_sensor_entity: Optional[str] = None
         self._last_price_sensor_check: Optional[datetime] = None
 
-        # Debouncing for rapid refreshes
-        self._debounce_timer = None
-        self._debounce_delay = 3.0  # 3 second debounce (Layer 4: increased from 1s)
-
         # Track previous price data to detect changes (Layer 2)
         # Store in hass.data to persist across integration reloads
         persistent_key = f"{DOMAIN}_{config_entry.entry_id}_price_state"
@@ -341,23 +337,10 @@ class CEWCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
         return config
 
     async def async_request_refresh(self) -> None:
-        """Request a refresh with debouncing."""
-        # Cancel any pending refresh
-        if self._debounce_timer:
-            self._debounce_timer.cancel()
-
-        # Schedule new refresh after debounce delay
-        async def _do_refresh():
-            """Perform the actual refresh."""
-            _LOGGER.debug("Executing debounced refresh")
-            # Call the parent's async_refresh() to actually fetch new data
-            await super(CEWCoordinator, self).async_refresh()
-
-        self._debounce_timer = self.hass.loop.call_later(
-            self._debounce_delay,
-            lambda: asyncio.create_task(_do_refresh())
-        )
-        _LOGGER.debug(f"Refresh requested, debouncing for {self._debounce_delay}s")
+        """Request an immediate coordinator refresh."""
+        _LOGGER.debug("Refresh requested, executing immediately")
+        # Call the parent's async_refresh() to fetch new data and update sensors
+        await super(CEWCoordinator, self).async_refresh()
 
     def get_config_value(self, key: str, default: Any = None) -> Any:
         """Get a configuration value from the coordinator data."""
