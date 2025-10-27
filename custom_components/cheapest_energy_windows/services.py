@@ -313,6 +313,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         boolean_settings = [
             ("price_override_enabled_tomorrow", "price_override_enabled"),
             ("time_override_enabled_tomorrow", "time_override_enabled"),
+            ("calculation_window_enabled_tomorrow", "calculation_window_enabled"),
         ]
 
         for tomorrow_key, today_key in boolean_settings:
@@ -353,6 +354,8 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         datetime_settings = [
             ("time_override_start_tomorrow", "time_override_start"),
             ("time_override_end_tomorrow", "time_override_end"),
+            ("calculation_window_start_tomorrow", "calculation_window_start"),
+            ("calculation_window_end_tomorrow", "calculation_window_end"),
         ]
 
         for tomorrow_key, today_key in datetime_settings:
@@ -369,27 +372,8 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 )
                 _LOGGER.debug(f"Rotated {tomorrow_key} -> {today_key}: {tomorrow_state.state}")
 
-        # Disable tomorrow settings
-        await hass.services.async_call(
-            "switch",
-            "turn_off",
-            {"entity_id": f"switch.{PREFIX}tomorrow_settings_enabled"},
-            blocking=True,
-        )
-
         # Fire event
         hass.bus.async_fire(EVENT_SETTINGS_ROTATED, {})
-
-        # Send notification if enabled
-        if hass.states.is_state(f"switch.{PREFIX}midnight_rotation_notifications", "on"):
-            await hass.services.async_call(
-                "notify",
-                "notify",
-                {
-                    "title": "CEW Settings Rotated",
-                    "message": "Tomorrow's settings have been applied to today",
-                },
-            )
 
         _LOGGER.info("Settings rotation complete")
 

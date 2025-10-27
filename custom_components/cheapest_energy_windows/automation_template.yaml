@@ -68,11 +68,19 @@ trigger:
     - discharge_aggressive
     - idle
     id: off_start
+  - platform: time
+    at: "00:00:10"  # 10 seconds after midnight to avoid races
+    id: midnight_rotation
 
 # Filter out transitions from 'unavailable' state (happens during config changes/reloads)
+# But allow midnight rotation trigger
 condition:
-  - condition: template
-    value_template: '{{ trigger.from_state.state != ''unavailable'' }}'
+  - condition: or
+    conditions:
+      - condition: trigger
+        id: midnight_rotation
+      - condition: template
+        value_template: '{{ trigger.from_state.state != ''unavailable'' }}'
 
 action:
   - choose:
@@ -572,6 +580,66 @@ action:
                       title: "⛔ CEW: Automation Disabled"
                       message: >-
                         CEW automation has been turned off.
+            default: []
+
+      #########################################################################
+      # MIDNIGHT ROTATION - Rotate tomorrow's settings to today at midnight
+      #########################################################################
+      - conditions:
+          - condition: trigger
+            id: midnight_rotation
+          - condition: state
+            entity_id: switch.cew_tomorrow_settings_enabled
+            state: 'on'
+        sequence:
+          # 1. Call the rotation service
+          - service: cheapest_energy_windows.rotate_tomorrow_settings
+            data: {}
+
+          # 2. Small delay for settings to propagate
+          - delay:
+              seconds: 2
+
+          # 3. Force coordinator refresh
+          - service: homeassistant.update_entity
+            target:
+              entity_id: sensor.cew_today
+
+          # 4. Disable tomorrow settings switch
+          - service: switch.turn_off
+            target:
+              entity_id: switch.cew_tomorrow_settings_enabled
+
+          # 5. Send notification if enabled
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: switch.cew_notifications_enabled
+                    state: 'on'
+                  - condition: state
+                    entity_id: switch.cew_midnight_rotation_notifications
+                    state: 'on'
+                  # Check quiet hours
+                  - condition: or
+                    conditions:
+                      - condition: state
+                        entity_id: switch.cew_quiet_hours_enabled
+                        state: 'off'
+                      - condition: template
+                        value_template: >-
+                          {% set now = now().strftime('%H:%M') %}
+                          {% set quiet_start = states('time.cew_quiet_hours_start') %}
+                          {% set quiet_end = states('time.cew_quiet_hours_end') %}
+                          {% if quiet_start < quiet_end %}
+                            {{ now < quiet_start or now >= quiet_end }}
+                          {% else %}
+                            {{ now < quiet_start and now >= quiet_end }}
+                          {% endif %}
+                sequence:
+                  - service: notify.notify
+                    data:
+                      title: "🔄 CEW: Settings Rotated"
+                      message: "Tomorrow's settings have been applied to today"
             default: []
 
     default: []

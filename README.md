@@ -4,7 +4,23 @@
 [![GitHub Release](https://img.shields.io/github/release/cew-hacs/cheapest_energy_windows.svg)](https://github.com/cew-hacs/cheapest_energy_windows/releases)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Optimize your energy consumption and battery storage by automatically identifying the cheapest charging windows and most expensive discharging periods based on dynamic electricity prices from Nord Pool.
+<a href="https://www.buymeacoffee.com/cheapest_energy_windows" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+Optimize your energy consumption and battery storage by automatically identifying the cheapest charging windows and most expensive discharging periods based on dynamic electricity prices from Nord Pool or ENTSO-E.
+
+## 🌟 Why Cheapest Energy Windows?
+
+Unlike other energy management solutions, this integration provides:
+
+1. **True Automation** - Not just sensors, but a complete automated control system
+2. **No Code Required** - Link your battery control through the UI, no YAML editing
+3. **Self-Maintaining** - Automation updates itself, survives restarts, and self-heals
+4. **Universal Compatibility** - Works with any battery system that has Home Assistant control
+5. **Multi-Source Support** - Nord Pool and ENTSO-E sensors supported with automatic normalization
+6. **Professional Features** - SOC safety, quiet hours, price overrides, time scheduling
+7. **Beautiful Dashboard** - Comprehensive control interface included
+
+This is not just another energy monitor - it's a complete battery management system that runs itself.
 
 ## Table of Contents
 
@@ -42,28 +58,44 @@ Optimize your energy consumption and battery storage by automatically identifyin
 
 ## Supported Price Sensors
 
-This integration is designed to work with **Nord Pool** dynamic electricity pricing. It requires a Nord Pool price sensor integration such as:
-- [Nordpool](https://github.com/custom-components/nordpool) - Provides hourly electricity prices for Nordic and Baltic countries
+This integration works with dynamic electricity pricing from multiple sources:
 
-The integration supports **flexible time granularity**:
-- **15-minute windows** (96 windows per day) - Uses quarter-hourly pricing data from Nord Pool for precise optimization
-- **1-hour windows** (24 windows per day) - Aggregates to hourly averages for simpler management
+### Supported Integrations
+- **[Nord Pool](https://github.com/custom-components/nordpool)** - Hourly electricity prices for Nordic and Baltic countries
+- **[ENTSO-E Transparency Platform](https://github.com/JaccoR/hass-entso-e)** - European electricity market data with 15-minute intervals
 
-Choose the window duration that matches your energy contract and trading resolution. Many modern dynamic pricing contracts support 15-minute settlements, allowing for more granular optimization opportunities.
+### Important Requirements
+- **15-minute interval data required** - Even if you have an hourly pricing contract, the integration needs 15-minute price data for optimal calculations
+- **Automatic aggregation** - The system automatically aggregates 15-minute data into hourly windows when configured for 1-hour intervals
+- **EUR/kWh units only** - Price sensors must provide prices in EUR/kWh (not cents)
 
-While primarily designed for Nord Pool data structure, it may work with other dynamic pricing sensors that provide hourly price data in a similar format (ENTSO-E, Tibber with modifications).
+### Time Granularity Options
+- **15-minute windows** (96 windows per day) - For contracts with 15-minute pricing intervals
+- **1-hour windows** (24 windows per day) - For contracts with hourly pricing intervals
+
+The integration automatically normalizes different sensor formats through a proxy sensor, ensuring compatibility with both Nord Pool and ENTSO-E data structures.
 
 ## Features
 
-- **Flexible Window Duration**: Choose between 15-minute (96 windows/day) or 1-hour (24 windows/day) intervals to match your energy contract
-- **Smart Window Detection**: Automatically identifies optimal charge/discharge windows based on electricity prices
-- **Percentile-Based Selection**: Uses statistical analysis to find truly cheap and expensive periods
+### 🎯 Key Highlights
+
+- **🔋 Zero-Configuration Battery Control**: Automatically creates and manages battery automation - just link your existing battery scripts/automations
+- **🔗 Battery Operations Linking**: Connect any automation, script, or scene to battery states directly from the dashboard
+- **🤖 Auto-Managed Automation**: The integration creates, updates, and maintains the battery control automation automatically (even survives restarts and upgrades)
+- **📱 Smart Notifications**: Configurable notifications for all state changes with quiet hours support
+- **🛡️ SOC Safety Protection**: Automatic battery protection based on State of Charge limits
+- **💰 Price Override**: Automatically charge when prices drop below threshold, regardless of calculated windows
+
+### Core Features
+
+- **Multi-Vendor Support**: Works with Nord Pool and ENTSO-E price sensors
+- **Flexible Window Duration**: Choose between 15-minute or 1-hour intervals
+- **Smart Window Detection**: Automatically identifies optimal charge/discharge windows
+- **Percentile-Based Selection**: Uses statistical analysis to find truly cheap/expensive periods
 - **Progressive Window Selection**: Ensures spread requirements are met for profitability
-- **Battery Management**: Control battery charging and discharging based on price optimization
 - **Dual-Day Management**: Configure different settings for today and tomorrow
-- **Time Overrides**: Set specific time periods to force charging or discharging
+- **Time Overrides**: Force specific battery modes during set time periods (idle, charge, discharge, aggressive discharge, off)
 - **Comprehensive Dashboard**: Full control interface with real-time status and analytics
-- **Automation Support**: Built-in automation for midnight settings rotation and state-based control
 
 ## Installation
 
@@ -91,17 +123,25 @@ While primarily designed for Nord Pool data structure, it may work with other dy
 5. Search for "Cheapest Energy Windows"
 6. Follow the configuration wizard
 
+### Docker Configuration Note
+
+If running Home Assistant in Docker and using ENTSO-E sensors:
+- Ensure your container has the `TZ` environment variable set (e.g., `TZ=Europe/Amsterdam`)
+- Nord Pool works without this setting, but ENTSO-E requires proper timezone configuration
+- Without this, ENTSO-E timestamps may show UTC (+00:00) instead of local timezone
+
 ## Configuration
 
 ### Initial Setup
 
 During the configuration flow, you'll be asked to:
 
-1. **Choose setup mode**:
-   - Guided Setup (recommended for new users)
-   - Quick Setup (for advanced users)
+1. **Select your price sensor**: The integration will auto-discover Nord Pool and ENTSO-E price sensors in your Home Assistant instance
 
-2. **Select your Nord Pool price sensor**: The integration will auto-discover Nord Pool price sensors in your Home Assistant instance
+2. **Link Battery Operations** (optional):
+   - Select existing automations, scripts, or scenes for each battery mode
+   - The integration will automatically trigger these when entering each state
+   - Can be configured later from the dashboard
 
 3. **Choose window duration**:
    - **15 minutes** (96 windows per day) - Recommended if your energy contract supports quarter-hourly trading/settlement
@@ -120,6 +160,14 @@ During the configuration flow, you'll be asked to:
    - Round-trip efficiency (%)
 
 You can change the window duration anytime after setup using the `Pricing Window Duration` selector in the dashboard or entity settings.
+
+### What Happens During Setup
+
+1. **Guided Configuration Wizard** walks you through all settings
+2. **Automatic Automation Creation** - A complete battery control automation is created
+3. **Battery Operations Linking** - Optionally link your existing battery control
+4. **Dashboard Ready** - All entities created and ready for the dashboard
+5. **Notifications Configured** - Ready to alert you about state changes
 
 ## Dashboard Installation
 
@@ -157,8 +205,9 @@ The integration includes a comprehensive pre-built dashboard for monitoring and 
 The dashboard requires the following custom cards to be installed via HACS:
 
 1. **[Mushroom Cards](https://github.com/piitaya/lovelace-mushroom)** - Modern card designs
-2. **[fold-entity-row](https://github.com/thomasloven/lovelace-fold-entity-row)** - Collapsible entity rows
+2. **[Fold Entity Row](https://github.com/thomasloven/lovelace-fold-entity-row)** - Collapsible entity rows
 3. **[ApexCharts Card](https://github.com/RomRider/apexcharts-card)** - Advanced chart rendering
+4. **[Card Mod](https://github.com/thomasloven/lovelace-card-mod)** - Advanced card styling
 
 To install these:
 - Go to **HACS > Frontend**
@@ -241,28 +290,45 @@ This service can be manually called if you want to:
 
 ## Automation System
 
-### How Automations Work
+### 🚀 Fully Automated Battery Control
 
-The integration automatically creates **state-based automations** for you during setup. These automations monitor the `sensor.cew_today` state and trigger actions when the state changes between:
+The integration provides a **complete, zero-configuration automation system**:
 
-- **charge** - Battery should charge during cheap energy windows
-- **discharge** - Battery should discharge during expensive energy windows
-- **discharge_aggressive** - Battery should discharge aggressively during peak prices
-- **idle** - Battery should remain idle (no action)
-- **off** - Automation is disabled
+1. **Automatic Creation**: On installation, creates a fully-functional battery control automation
+2. **Auto-Updates**: Automation is automatically updated with new features during integration upgrades
+3. **Self-Healing**: Recreated if deleted, ensuring your battery control never breaks
+4. **State-Based Control**: Responds to calculated energy windows and manual overrides
 
-### Initial Setup: Notification-Only Mode
+### 🔗 Battery Operations Linking
 
-**By default**, the integration sets up **notification automations** that alert you when states change. This is a safe starting point that lets you:
+**NEW: Link your existing battery control without editing YAML!**
 
-✓ Understand how the system works
-✓ Verify the window selections are correct
-✓ See state changes in real-time
-✗ Does NOT control your battery automatically
+Simply select your battery control method during setup or from the dashboard:
+- Link existing **automations** (e.g., `automation.charge_battery`)
+- Link existing **scripts** (e.g., `script.set_battery_mode`)
+- Link existing **scenes** (e.g., `scene.battery_discharge`)
 
-### Adding Battery Control Actions
+The integration will automatically trigger your linked actions when entering each mode:
+- **Idle** → Your idle automation/script/scene
+- **Charge** → Your charging automation/script/scene
+- **Discharge** → Your discharge automation/script/scene
+- **Aggressive Discharge** → Your peak discharge automation/script/scene
 
-To automate your battery, you need to **customize the automations** with your specific battery control actions:
+### 📱 Intelligent Notifications
+
+- **Per-State Configuration**: Enable/disable notifications for each battery state
+- **Quiet Hours**: Set times when notifications are suppressed
+- **Smart Alerts**: Notifies about price overrides, SOC safety blocks, and state changes
+- **Automation Status**: Get alerts when automation is disabled or battery is off
+
+### 🛡️ Battery Protection Features
+
+- **SOC Safety Limits**: Prevents discharge below configurable thresholds
+- **Dual SOC Thresholds**: Separate limits for normal and aggressive discharge
+- **Automatic Mode Reversion**: Returns to idle when SOC limits are reached
+- **Configuration Validation**: Alerts if SOC safety is misconfigured
+
+### Manual Control (Advanced)
 
 #### Step 1: Find Your Battery Control Entities
 
