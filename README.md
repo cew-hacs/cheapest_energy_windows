@@ -600,23 +600,9 @@ Contributions are welcome! Please:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
 
-- Home Assistant Community for inspiration and support
-- Nordpool integration for price data structure
-- All contributors and testers
+## ☕ Support the Project
 
-## Support
+If you find this dashboard useful, consider supporting the main integration developer:
 
-For issues, questions, or suggestions:
-- Open an issue on [GitHub](https://github.com/cheapest-energy-windows/cheapest_energy_windows/issues)
-- Join the discussion on [Home Assistant Community](https://community.home-assistant.io/)
-
-## Changelog
-
-### Version 1.0.0
-- Initial release
-- Full feature parity with YAML package
-- HACS compatible structure
-- Performance optimizations
-- Comprehensive dashboard
+[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/cheapest_energy_windows)
