@@ -61,7 +61,9 @@
           "min_spread": "Min Spread Charge % (price difference needed)",
           "min_spread_discharge": "Min Spread Discharge % (price difference needed)",
           "aggressive_discharge_spread": "Aggressive Spread % (for peak discharge)",
-          "min_price_difference": "Min Price Difference (EUR/kWh, optional)"
+          "min_price_difference": "Min Price Difference (EUR/kWh, optional)",
+          "price_override_enabled": "Enable Price Override",
+          "price_override_threshold": "Price Override Threshold (EUR/kWh)"
         },
         "data_description": {
           "pricing_window_duration": "Match this to your energy contract (15-min or hourly pricing)",
@@ -72,7 +74,9 @@
           "min_spread": "Minimum price spread % required to activate charging (0-200%)",
           "min_spread_discharge": "Minimum spread % required for normal discharge (0-200%)",
           "aggressive_discharge_spread": "Spread % required for aggressive peak discharge (0-300%)",
-          "min_price_difference": "Absolute minimum price difference in EUR/kWh to activate charging (0-0.5)"
+          "min_price_difference": "Absolute minimum price difference in EUR/kWh to activate charging (0-0.5)",
+          "price_override_enabled": "Always charge when price drops below threshold, ignoring spread/window requirements",
+          "price_override_threshold": "Price threshold in EUR/kWh - charge immediately when spot price is below this value (0-0.5)"
         }
       },
       "battery": {
@@ -81,18 +85,36 @@
         "data": {
           "battery_system_name": "Battery System Name",
           "battery_soc_sensor": "State of Charge Sensor",
-          "battery_energy_sensor": "Available Energy Sensor",
-          "battery_charge_sensor": "Daily Charge Sensor",
-          "battery_discharge_sensor": "Daily Discharge Sensor",
+          "battery_available_energy_sensor": "Available Energy Sensor",
+          "battery_daily_charge_sensor": "Daily Charge Sensor",
+          "battery_daily_discharge_sensor": "Daily Discharge Sensor",
           "battery_power_sensor": "Current Power Sensor"
         },
         "data_description": {
           "battery_system_name": "Friendly name for your battery system (leave empty to skip)",
           "battery_soc_sensor": "Sensor showing current battery charge % (0-100). Example: sensor.battery_soc",
-          "battery_energy_sensor": "Sensor showing available battery capacity in kWh. Example: sensor.battery_available_energy",
-          "battery_charge_sensor": "Sensor tracking total energy charged today in kWh (must reset daily)",
-          "battery_discharge_sensor": "Sensor tracking total energy discharged today in kWh (must reset daily)",
+          "battery_available_energy_sensor": "Sensor showing available battery capacity in kWh. Example: sensor.battery_available_energy",
+          "battery_daily_charge_sensor": "Sensor tracking total energy charged today in kWh (must reset daily)",
+          "battery_daily_discharge_sensor": "Sensor tracking total energy discharged today in kWh (must reset daily)",
           "battery_power_sensor": "Sensor showing current battery power in W (positive=charging, negative=discharging)"
+        }
+      },
+      "battery_operations": {
+        "title": "Battery Operations (Optional)",
+        "description": "{info}",
+        "data": {
+          "battery_idle_action": "Idle Mode Action",
+          "battery_charge_action": "Charge Mode Action",
+          "battery_discharge_action": "Discharge Mode Action",
+          "battery_aggressive_discharge_action": "Aggressive Discharge Mode Action",
+          "battery_off_action": "Off Mode Action"
+        },
+        "data_description": {
+          "battery_idle_action": "Select automation/script for idle mode. Example: Set battery to follow grid (Smart Matching)",
+          "battery_charge_action": "Select automation/script for charge mode. Example: Enable battery charging from grid at max power",
+          "battery_discharge_action": "Select automation/script for discharge mode. Example: Enable battery discharge to grid at normal power",
+          "battery_aggressive_discharge_action": "Select automation/script for aggressive discharge. Example: Enable maximum discharge power during peak prices",
+          "battery_off_action": "Select automation/script for off mode. Example: Set battery to manual mode when automation is disabled"
         }
       },
       "automation": {
@@ -112,7 +134,8 @@
       }
     },
     "error": {
-      "invalid_price_sensor": "The selected price sensor is invalid or missing required attributes",
+      "invalid_price_sensor": "The selected price sensor is invalid, missing required 'raw_today' attribute, or not properly configured. Ensure the sensor provides hourly or 15-minute price data.",
+      "no_price_sensors": "No compatible price sensors found. Please install Nordpool from HACS first.",
       "automation_creation_failed": "Failed to create automation. You can create it manually after setup.",
       "unknown": "Unexpected error occurred"
     },

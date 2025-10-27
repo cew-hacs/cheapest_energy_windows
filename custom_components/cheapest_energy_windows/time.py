@@ -42,6 +42,8 @@ async def async_setup_entry(
         ("time_override_end_tomorrow", "Time Override End Tomorrow", DEFAULT_TIME_OVERRIDE_END, "mdi:clock-end"),
         ("calculation_window_start", "Calculation Window Start", DEFAULT_CALCULATION_WINDOW_START, "mdi:window-closed-variant"),
         ("calculation_window_end", "Calculation Window End", DEFAULT_CALCULATION_WINDOW_END, "mdi:window-closed-variant"),
+        ("calculation_window_start_tomorrow", "Calculation Window Start Tomorrow", DEFAULT_CALCULATION_WINDOW_START, "mdi:window-open-variant"),
+        ("calculation_window_end_tomorrow", "Calculation Window End Tomorrow", DEFAULT_CALCULATION_WINDOW_END, "mdi:window-open-variant"),
         ("quiet_hours_start", "Quiet Hours Start", DEFAULT_QUIET_START, "mdi:volume-off"),
         ("quiet_hours_end", "Quiet Hours End", DEFAULT_QUIET_END, "mdi:volume-high"),
     ]

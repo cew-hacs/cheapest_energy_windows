@@ -16,6 +16,7 @@ from .const import (
     MODE_DISCHARGE,
     MODE_DISCHARGE_AGGRESSIVE,
     MODE_IDLE,
+    MODE_OFF,
     STATE_CHARGE,
     STATE_DISCHARGE,
     STATE_DISCHARGE_AGGRESSIVE,
@@ -85,11 +86,11 @@ class WindowCalculationEngine:
             _LOGGER.warning("No prices to process")
             return self._empty_result(is_tomorrow)
 
-        # Apply calculation window filter if enabled
-        calc_window_enabled = config.get("calculation_window_enabled", False)
+        # Apply calculation window filter if enabled (use suffix for tomorrow settings)
+        calc_window_enabled = config.get(f"calculation_window_enabled{suffix}", False)
         if calc_window_enabled:
-            calc_window_start = config.get("calculation_window_start", "00:00:00")
-            calc_window_end = config.get("calculation_window_end", "23:59:59")
+            calc_window_start = config.get(f"calculation_window_start{suffix}", "00:00:00")
+            calc_window_end = config.get(f"calculation_window_end{suffix}", "23:59:59")
             _LOGGER.warning(f"Calculation window ENABLED: {calc_window_start} - {calc_window_end}, filtering {len(processed_prices)} prices")
             processed_prices = self._filter_prices_by_calculation_window(
                 processed_prices,
@@ -605,6 +606,7 @@ class WindowCalculationEngine:
             MODE_CHARGE: STATE_CHARGE,
             MODE_DISCHARGE: STATE_DISCHARGE,
             MODE_DISCHARGE_AGGRESSIVE: STATE_DISCHARGE_AGGRESSIVE,
+            MODE_OFF: STATE_OFF,
         }
         return mode_map.get(mode, STATE_IDLE)
 
@@ -614,45 +616,69 @@ class WindowCalculationEngine:
         charge_windows: List[Dict[str, Any]],
         discharge_windows: List[Dict[str, Any]],
         aggressive_windows: List[Dict[str, Any]],
-        config: Dict[str, Any]
+        config: Dict[str, Any],
+        is_tomorrow: bool = False
     ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        """Calculate actual charge/discharge windows considering time overrides.
+        """Calculate actual charge/discharge windows considering time and price overrides.
 
-        This shows what the battery will ACTUALLY do when time overrides are applied.
-        For example, if 8:00-10:00 is calculated as charge, but 9:00-10:00 has a
-        discharge override, the actual charge window will only be 8:00-9:00.
+        This shows what the battery will ACTUALLY do when overrides are applied.
+        For example:
+        - Time override: if 8:00-10:00 is calculated as charge, but 9:00-10:00 has a
+          discharge override, the actual charge window will only be 8:00-9:00.
+        - Price override: if price drops below threshold, those periods become charge windows
+          even if not in calculated windows.
+
+        Args:
+            prices: List of processed price data
+            charge_windows: Calculated charge windows
+            discharge_windows: Calculated discharge windows
+            aggressive_windows: Calculated aggressive discharge windows
+            config: Configuration dictionary
+            is_tomorrow: Whether calculating for tomorrow (affects config key suffix)
 
         Returns:
             Tuple of (actual_charge_windows, actual_discharge_windows)
         """
-        # Check if time override is enabled
-        if not config.get("time_override_enabled", False):
-            # No override, return calculated windows as-is (don't combine normal + aggressive)
+        # Use tomorrow's config if applicable
+        suffix = "_tomorrow" if is_tomorrow and config.get("tomorrow_settings_enabled", False) else ""
+
+        # Check if any override is enabled
+        time_override_enabled = config.get(f"time_override_enabled{suffix}", False)
+        price_override_enabled = config.get(f"price_override_enabled{suffix}", False)
+
+        if not time_override_enabled and not price_override_enabled:
+            # No overrides, return calculated windows as-is (don't combine normal + aggressive)
             return list(charge_windows), list(discharge_windows)
 
-        # Get override configuration
-        override_start_str = config.get("time_override_start", "")
-        override_end_str = config.get("time_override_end", "")
-        override_mode = config.get("time_override_mode", MODE_IDLE)
+        # Get override configuration (using suffix for tomorrow settings)
+        override_start_str = config.get(f"time_override_start{suffix}", "")
+        override_end_str = config.get(f"time_override_end{suffix}", "")
+        override_mode = config.get(f"time_override_mode{suffix}", MODE_IDLE)
+        price_override_threshold = config.get(f"price_override_threshold{suffix}", 0.15)
 
-        if not override_start_str or not override_end_str:
-            # Invalid override config, return calculated windows
-            return list(charge_windows), list(discharge_windows)
+        # Validate time override config if enabled
+        if time_override_enabled and (not override_start_str or not override_end_str):
+            # Invalid time override config, disable it
+            time_override_enabled = False
 
         # Build a complete timeline of all price windows with their states
-        # considering both calculated windows and time override
+        # considering calculated windows, time overrides, and price overrides
         timeline = []
 
         for price_data in prices:
             timestamp = price_data["timestamp"]
             duration = price_data["duration"]
+            price = price_data["price"]
 
-            # Determine state for this time period
+            # Determine state for this time period (priority order: time override > price override > calculated)
             state = STATE_IDLE  # Default
 
-            # Check if in override time range
-            if self._is_in_time_range(timestamp, override_start_str, override_end_str):
+            # Check time override first (highest priority)
+            if time_override_enabled and self._is_in_time_range(timestamp, override_start_str, override_end_str):
                 state = self._mode_to_state(override_mode)
+            # Check price override
+            elif price_override_enabled and price <= price_override_threshold:
+                state = STATE_CHARGE
             else:
                 # Check calculated windows
                 for window in aggressive_windows:
@@ -712,38 +738,39 @@ class WindowCalculationEngine:
         if avg_cheap > 0 and avg_expensive > 0:
             spread_pct = float(((avg_expensive - avg_cheap) / avg_cheap) * 100)
 
-        # Count completed windows
-        completed_charge = sum(
-            1 for w in charge_windows
-            if w["timestamp"] + timedelta(minutes=w["duration"]) <= current_time
-        )
-        completed_discharge = sum(
-            1 for w in discharge_windows
-            if w["timestamp"] + timedelta(minutes=w["duration"]) <= current_time
-        )
-
-        # Calculate actual windows considering time overrides
+        # Calculate actual windows considering time and price overrides
         actual_charge, actual_discharge = self._calculate_actual_windows(
             prices,
             charge_windows,
             discharge_windows,
             aggressive_windows,
-            config
+            config,
+            is_tomorrow
         )
 
-        # Calculate costs
+        # Count completed windows (use actual windows to include price/time overrides)
+        completed_charge = sum(
+            1 for w in actual_charge
+            if w["timestamp"] + timedelta(minutes=w["duration"]) <= current_time
+        )
+        completed_discharge = sum(
+            1 for w in actual_discharge
+            if w["timestamp"] + timedelta(minutes=w["duration"]) <= current_time
+        )
+
+        # Calculate costs (use actual windows to include price/time overrides)
         charge_power = config.get("charge_power", 2400) / 1000  # Convert to kW
         discharge_power = config.get("discharge_power", 2400) / 1000
 
         completed_charge_cost = sum(
             w["price"] * (w["duration"] / 60) * charge_power
-            for w in charge_windows
+            for w in actual_charge
             if w["timestamp"] + timedelta(minutes=w["duration"]) <= current_time
         )
 
         completed_discharge_revenue = sum(
             w["price"] * (w["duration"] / 60) * discharge_power
-            for w in discharge_windows
+            for w in actual_discharge
             if w["timestamp"] + timedelta(minutes=w["duration"]) <= current_time
         )
 

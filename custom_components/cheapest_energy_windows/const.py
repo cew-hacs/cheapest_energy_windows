@@ -16,13 +16,13 @@ CONF_TAX: Final = "tax"
 CONF_ADDITIONAL_COST: Final = "additional_cost"
 CONF_BATTERY_SYSTEM_NAME: Final = "battery_system_name"
 CONF_BATTERY_SOC_SENSOR: Final = "battery_soc_sensor"
-CONF_BATTERY_ENERGY_SENSOR: Final = "battery_energy_sensor"
-CONF_BATTERY_CHARGE_SENSOR: Final = "battery_charge_sensor"
-CONF_BATTERY_DISCHARGE_SENSOR: Final = "battery_discharge_sensor"
+CONF_BATTERY_ENERGY_SENSOR: Final = "battery_available_energy_sensor"
+CONF_BATTERY_CHARGE_SENSOR: Final = "battery_daily_charge_sensor"
+CONF_BATTERY_DISCHARGE_SENSOR: Final = "battery_daily_discharge_sensor"
 CONF_BATTERY_POWER_SENSOR: Final = "battery_power_sensor"
 
 # Default values
-DEFAULT_PRICE_SENSOR: Final = "sensor.nordpool_kwh_nl_eur_3_10_0"
+DEFAULT_PRICE_SENSOR: Final = ""
 DEFAULT_VAT_RATE: Final = 0.21
 DEFAULT_TAX: Final = 0.12286
 DEFAULT_ADDITIONAL_COST: Final = 0.02398
@@ -32,7 +32,7 @@ DEFAULT_CHEAP_PERCENTILE: Final = 25
 DEFAULT_EXPENSIVE_PERCENTILE: Final = 25
 DEFAULT_MIN_SPREAD: Final = 30
 DEFAULT_MIN_SPREAD_DISCHARGE: Final = 30
-DEFAULT_AGGRESSIVE_DISCHARGE_SPREAD: Final = 40
+DEFAULT_AGGRESSIVE_DISCHARGE_SPREAD: Final = 60
 DEFAULT_MIN_PRICE_DIFFERENCE: Final = 0.05
 DEFAULT_PRICE_OVERRIDE_THRESHOLD: Final = 0.15
 DEFAULT_BATTERY_RTE: Final = 85
@@ -49,7 +49,7 @@ DEFAULT_CALCULATION_WINDOW_START: Final = "00:00:00"
 DEFAULT_CALCULATION_WINDOW_END: Final = "23:59:59"
 
 # Update intervals
-UPDATE_INTERVAL: Final = timedelta(seconds=5)
+UPDATE_INTERVAL: Final = timedelta(seconds=10)
 
 # Sensor states
 STATE_CHARGE: Final = "charge"
@@ -65,9 +65,10 @@ MODE_IDLE: Final = "idle"
 MODE_CHARGE: Final = "charge"
 MODE_DISCHARGE: Final = "discharge"
 MODE_DISCHARGE_AGGRESSIVE: Final = "discharge_aggressive"
+MODE_OFF: Final = "off"
 
 # Time override modes list
-TIME_OVERRIDE_MODES: Final = [MODE_IDLE, MODE_CHARGE, MODE_DISCHARGE, MODE_DISCHARGE_AGGRESSIVE]
+TIME_OVERRIDE_MODES: Final = [MODE_IDLE, MODE_CHARGE, MODE_DISCHARGE, MODE_DISCHARGE_AGGRESSIVE, MODE_OFF]
 
 # Pricing window duration options
 PRICING_15_MINUTES: Final = "15_minutes"
@@ -188,6 +189,7 @@ NON_CALCULATION_KEYS: Final = {
     "notify_discharge",
     "notify_discharge_aggressive",
     "notify_idle",
+    "notify_off",
 
     # Battery system tracking (display only)
     "battery_system_name",

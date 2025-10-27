@@ -53,11 +53,12 @@ async def async_create_notification_automation(hass: HomeAssistant) -> tuple[boo
                 if not isinstance(existing_automations, list):
                     existing_automations = [existing_automations]
 
-                # Check if automation already exists
-                for auto in existing_automations:
-                    if isinstance(auto, dict) and auto.get("id") == automation_id:
-                        _LOGGER.info(f"Automation {automation_id} already exists")
-                        return True, "Automation already exists"
+                # Remove existing automation if present (to update with latest template)
+                existing_automations = [
+                    auto for auto in existing_automations
+                    if not (isinstance(auto, dict) and auto.get("id") == automation_id)
+                ]
+                _LOGGER.info(f"Updating automation {automation_id} with latest template")
 
             except yaml.YAMLError as e:
                 _LOGGER.error(f"Error parsing existing automations.yaml: {e}")
@@ -312,6 +313,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         boolean_settings = [
             ("price_override_enabled_tomorrow", "price_override_enabled"),
             ("time_override_enabled_tomorrow", "time_override_enabled"),
+            ("calculation_window_enabled_tomorrow", "calculation_window_enabled"),
         ]
 
         for tomorrow_key, today_key in boolean_settings:
@@ -352,6 +354,8 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         datetime_settings = [
             ("time_override_start_tomorrow", "time_override_start"),
             ("time_override_end_tomorrow", "time_override_end"),
+            ("calculation_window_start_tomorrow", "calculation_window_start"),
+            ("calculation_window_end_tomorrow", "calculation_window_end"),
         ]
 
         for tomorrow_key, today_key in datetime_settings:
@@ -368,29 +372,60 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 )
                 _LOGGER.debug(f"Rotated {tomorrow_key} -> {today_key}: {tomorrow_state.state}")
 
-        # Disable tomorrow settings
-        await hass.services.async_call(
-            "switch",
-            "turn_off",
-            {"entity_id": f"switch.{PREFIX}tomorrow_settings_enabled"},
-            blocking=True,
-        )
-
         # Fire event
         hass.bus.async_fire(EVENT_SETTINGS_ROTATED, {})
 
-        # Send notification if enabled
-        if hass.states.is_state(f"switch.{PREFIX}midnight_rotation_notifications", "on"):
-            await hass.services.async_call(
-                "notify",
-                "notify",
-                {
-                    "title": "CEW Settings Rotated",
-                    "message": "Tomorrow's settings have been applied to today",
-                },
-            )
-
         _LOGGER.info("Settings rotation complete")
+
+    async def handle_trigger_battery_action(call: ServiceCall) -> None:
+        """Handle triggering battery mode actions."""
+        mode = call.data.get("mode")
+
+        # Map mode to text entity
+        mode_entity_map = {
+            "idle": f"text.{PREFIX}battery_idle_action",
+            "charge": f"text.{PREFIX}battery_charge_action",
+            "discharge": f"text.{PREFIX}battery_discharge_action",
+            "aggressive_discharge": f"text.{PREFIX}battery_aggressive_discharge_action",
+            "off": f"text.{PREFIX}battery_off_action",
+        }
+
+        text_entity = mode_entity_map.get(mode)
+        if not text_entity:
+            _LOGGER.error(f"Invalid mode: {mode}")
+            return
+
+        # Get the configured automation/script/scene entity_id
+        text_state = hass.states.get(text_entity)
+        if not text_state:
+            _LOGGER.error(f"Text entity not found: {text_entity}")
+            return
+
+        target_entity = text_state.state
+        if not target_entity or target_entity == "not_configured":
+            _LOGGER.warning(f"No action configured for mode: {mode}")
+            return
+
+        # Determine service based on entity type
+        if target_entity.startswith("automation."):
+            service = "automation.trigger"
+        elif target_entity.startswith("script."):
+            service = "script.turn_on"
+        elif target_entity.startswith("scene."):
+            service = "scene.turn_on"
+        else:
+            _LOGGER.error(f"Unsupported entity type: {target_entity}")
+            return
+
+        # Call the service
+        domain, service_name = service.split(".")
+        await hass.services.async_call(
+            domain,
+            service_name,
+            {"entity_id": target_entity},
+            blocking=False,
+        )
+        _LOGGER.info(f"Triggered {mode} action: {target_entity}")
 
     # Register services
     hass.services.async_register(
@@ -398,6 +433,15 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         SERVICE_ROTATE_SETTINGS,
         handle_rotate_settings,
         schema=SERVICE_ROTATE_SCHEMA,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
+        "trigger_battery_action",
+        handle_trigger_battery_action,
+        schema=vol.Schema({
+            vol.Required("mode"): vol.In(["idle", "charge", "discharge", "aggressive_discharge", "off"]),
+        }),
     )
 
     _LOGGER.info("Services registered successfully")

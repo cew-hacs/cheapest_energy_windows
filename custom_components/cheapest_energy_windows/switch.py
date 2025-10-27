@@ -40,18 +40,14 @@ async def async_setup_entry(
         ("time_override_enabled", "Time Override Enabled", False, "mdi:clock-edit"),
         ("time_override_enabled_tomorrow", "Time Override Enabled Tomorrow", False, "mdi:clock-edit"),
         ("calculation_window_enabled", "Calculation Window Enabled", False, "mdi:window-closed-variant"),
+        ("calculation_window_enabled_tomorrow", "Calculation Window Enabled Tomorrow", False, "mdi:window-open-variant"),
         ("notify_automation_disabled", "Notify Automation Disabled", True, "mdi:bell-off"),
         ("notify_charging", "Notify Charging", True, "mdi:battery-charging"),
         ("notify_discharge", "Notify Discharge", True, "mdi:battery-arrow-up"),
         ("notify_discharge_aggressive", "Notify Discharge Aggressive", True, "mdi:battery-alert"),
         ("notify_idle", "Notify Idle", True, "mdi:battery"),
+        ("notify_off", "Notify Off", True, "mdi:battery-off"),
         ("battery_use_soc_safety", "Battery Use SOC Safety", False, "mdi:shield-battery"),
-        ("battery_section_visible", "Battery Section Visible", True, "mdi:eye"),
-        ("battery_show_soc", "Battery Show SOC", True, "mdi:battery-50"),
-        ("battery_show_available_energy", "Battery Show Available Energy", True, "mdi:battery"),
-        ("battery_show_daily_charge", "Battery Show Daily Charge", True, "mdi:battery-charging"),
-        ("battery_show_daily_discharge", "Battery Show Daily Discharge", True, "mdi:battery-minus"),
-        ("battery_show_current_power", "Battery Show Current Power", True, "mdi:flash"),
     ]
 
     for key, name, default, icon in switch_configs:
