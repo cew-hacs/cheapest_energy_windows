@@ -76,6 +76,7 @@ venv/
 env/
 .venv/
 *.bck
+node_modules/
 
 # Temporary/working files
 custom_components/main_dashboard_working.yaml
