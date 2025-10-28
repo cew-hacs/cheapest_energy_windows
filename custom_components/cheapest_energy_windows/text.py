@@ -97,7 +97,7 @@ async def async_setup_entry(
             config_entry,
             "battery_idle_action",
             "Battery Idle Action",
-            config_entry.data.get("battery_idle_action", "not_configured"),
+            config_entry.options.get("battery_idle_action", "not_configured"),
             "mdi:robot",
             r"^(automation\.|script\.|scene\.)[a-z0-9_]+$|^not_configured$"
         ),
@@ -106,7 +106,7 @@ async def async_setup_entry(
             config_entry,
             "battery_charge_action",
             "Battery Charge Action",
-            config_entry.data.get("battery_charge_action", "not_configured"),
+            config_entry.options.get("battery_charge_action", "not_configured"),
             "mdi:robot",
             r"^(automation\.|script\.|scene\.)[a-z0-9_]+$|^not_configured$"
         ),
@@ -115,7 +115,7 @@ async def async_setup_entry(
             config_entry,
             "battery_discharge_action",
             "Battery Discharge Action",
-            config_entry.data.get("battery_discharge_action", "not_configured"),
+            config_entry.options.get("battery_discharge_action", "not_configured"),
             "mdi:robot",
             r"^(automation\.|script\.|scene\.)[a-z0-9_]+$|^not_configured$"
         ),
@@ -124,7 +124,7 @@ async def async_setup_entry(
             config_entry,
             "battery_aggressive_discharge_action",
             "Battery Aggressive Discharge Action",
-            config_entry.data.get("battery_aggressive_discharge_action", "not_configured"),
+            config_entry.options.get("battery_aggressive_discharge_action", "not_configured"),
             "mdi:robot",
             r"^(automation\.|script\.|scene\.)[a-z0-9_]+$|^not_configured$"
         ),
@@ -133,7 +133,7 @@ async def async_setup_entry(
             config_entry,
             "battery_off_action",
             "Battery Off Action",
-            config_entry.data.get("battery_off_action", "not_configured"),
+            config_entry.options.get("battery_off_action", "not_configured"),
             "mdi:robot",
             r"^(automation\.|script\.|scene\.)[a-z0-9_]+$|^not_configured$"
         ),

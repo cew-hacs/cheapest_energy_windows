@@ -51,11 +51,11 @@ class WindowCalculationEngine:
             Dictionary with calculated windows and attributes
         """
         # Debug logging for calculation window
-        _LOGGER.warning(f"=== CALCULATION ENGINE CALLED for {'tomorrow' if is_tomorrow else 'today'} ===")
-        _LOGGER.warning(f"Config keys received: {list(config.keys())}")
-        _LOGGER.warning(f"calculation_window_enabled in config: {config.get('calculation_window_enabled', 'NOT PRESENT')}")
-        _LOGGER.warning(f"calculation_window_start: {config.get('calculation_window_start', 'NOT PRESENT')}")
-        _LOGGER.warning(f"calculation_window_end: {config.get('calculation_window_end', 'NOT PRESENT')}")
+        _LOGGER.debug(f"=== CALCULATION ENGINE CALLED for {'tomorrow' if is_tomorrow else 'today'} ===")
+        _LOGGER.debug(f"Config keys received: {list(config.keys())}")
+        _LOGGER.debug(f"calculation_window_enabled in config: {config.get('calculation_window_enabled', 'NOT PRESENT')}")
+        _LOGGER.debug(f"calculation_window_start: {config.get('calculation_window_start', 'NOT PRESENT')}")
+        _LOGGER.debug(f"calculation_window_end: {config.get('calculation_window_end', 'NOT PRESENT')}")
 
         # Get configuration values
         pricing_mode = config.get("pricing_window_duration", PRICING_15_MINUTES)
@@ -83,7 +83,7 @@ class WindowCalculationEngine:
         )
 
         if not processed_prices:
-            _LOGGER.warning("No prices to process")
+            _LOGGER.debug("No prices to process")
             return self._empty_result(is_tomorrow)
 
         # Apply calculation window filter if enabled (use suffix for tomorrow settings)
@@ -91,15 +91,15 @@ class WindowCalculationEngine:
         if calc_window_enabled:
             calc_window_start = config.get(f"calculation_window_start{suffix}", "00:00:00")
             calc_window_end = config.get(f"calculation_window_end{suffix}", "23:59:59")
-            _LOGGER.warning(f"Calculation window ENABLED: {calc_window_start} - {calc_window_end}, filtering {len(processed_prices)} prices")
+            _LOGGER.debug(f"Calculation window ENABLED: {calc_window_start} - {calc_window_end}, filtering {len(processed_prices)} prices")
             processed_prices = self._filter_prices_by_calculation_window(
                 processed_prices,
                 calc_window_start,
                 calc_window_end
             )
-            _LOGGER.warning(f"After calculation window filter: {len(processed_prices)} prices remain")
+            _LOGGER.debug(f"After calculation window filter: {len(processed_prices)} prices remain")
             if not processed_prices:
-                _LOGGER.warning("No prices after calculation window filter")
+                _LOGGER.debug("No prices after calculation window filter")
                 return self._empty_result(is_tomorrow)
         else:
             _LOGGER.debug("Calculation window disabled")
@@ -136,7 +136,7 @@ class WindowCalculationEngine:
         if calc_window_enabled:
             charge_times = [w["timestamp"].strftime("%H:%M") for w in charge_windows]
             discharge_times = [w["timestamp"].strftime("%H:%M") for w in discharge_windows]
-            _LOGGER.warning(f"After calculation window filter - Charge windows: {charge_times}, Discharge windows: {discharge_times}")
+            _LOGGER.debug(f"After calculation window filter - Charge windows: {charge_times}, Discharge windows: {discharge_times}")
 
         # Calculate current state
         current_state = self._determine_current_state(
@@ -169,20 +169,20 @@ class WindowCalculationEngine:
         additional_cost: float
     ) -> List[Dict[str, Any]]:
         """Process raw prices with VAT, tax, and additional costs."""
-        _LOGGER.info("="*60)
-        _LOGGER.info("PROCESS PRICES START")
-        _LOGGER.info(f"Raw prices type: {type(raw_prices)}")
-        _LOGGER.info(f"Raw prices length: {len(raw_prices) if hasattr(raw_prices, '__len__') else 'N/A'}")
-        _LOGGER.info(f"Pricing mode: {pricing_mode}")
-        _LOGGER.info(f"VAT: {vat} (type: {type(vat)})")
-        _LOGGER.info(f"Tax: {tax} (type: {type(tax)})")
-        _LOGGER.info(f"Additional cost: {additional_cost} (type: {type(additional_cost)})")
+        _LOGGER.debug("="*60)
+        _LOGGER.debug("PROCESS PRICES START")
+        _LOGGER.debug(f"Raw prices type: {type(raw_prices)}")
+        _LOGGER.debug(f"Raw prices length: {len(raw_prices) if hasattr(raw_prices, '__len__') else 'N/A'}")
+        _LOGGER.debug(f"Pricing mode: {pricing_mode}")
+        _LOGGER.debug(f"VAT: {vat} (type: {type(vat)})")
+        _LOGGER.debug(f"Tax: {tax} (type: {type(tax)})")
+        _LOGGER.debug(f"Additional cost: {additional_cost} (type: {type(additional_cost)})")
 
         if raw_prices and len(raw_prices) > 0:
-            _LOGGER.info(f"First item type: {type(raw_prices[0])}")
-            _LOGGER.info(f"First item: {raw_prices[0]}")
+            _LOGGER.debug(f"First item type: {type(raw_prices[0])}")
+            _LOGGER.debug(f"First item: {raw_prices[0]}")
             if len(raw_prices) > 1:
-                _LOGGER.info(f"Second item: {raw_prices[1]}")
+                _LOGGER.debug(f"Second item: {raw_prices[1]}")
 
         processed = []
 
@@ -279,12 +279,12 @@ class WindowCalculationEngine:
         # Sort by timestamp
         processed.sort(key=lambda x: x["timestamp"])
 
-        _LOGGER.info(f"Processed {len(processed)} price entries")
+        _LOGGER.debug(f"Processed {len(processed)} price entries")
         if processed:
-            _LOGGER.info(f"First processed price: {processed[0]}")
-            _LOGGER.info(f"Last processed price: {processed[-1]}")
-        _LOGGER.info("PROCESS PRICES END")
-        _LOGGER.info("="*60)
+            _LOGGER.debug(f"First processed price: {processed[0]}")
+            _LOGGER.debug(f"Last processed price: {processed[-1]}")
+        _LOGGER.debug("PROCESS PRICES END")
+        _LOGGER.debug("="*60)
 
         return processed
 
@@ -335,7 +335,7 @@ class WindowCalculationEngine:
                     if start_time <= price_time < end_time:
                         filtered.append(price_data)
 
-            _LOGGER.info(f"Calculation window filter: {len(prices)} -> {len(filtered)} prices (window: {start_str} to {end_str})")
+            _LOGGER.debug(f"Calculation window filter: {len(prices)} -> {len(filtered)} prices (window: {start_str} to {end_str})")
 
         except (ValueError, IndexError, AttributeError) as e:
             _LOGGER.error(f"Failed to parse calculation window times: {e}")

@@ -163,13 +163,12 @@ class CEWBaseSensor(CoordinatorEntity, SensorEntity):
         ]
 
         # Add time overrides (these affect current state)
-        for i in range(1, 4):
-            calc_values.extend([
-                config.get(f"time_override_{i}_enabled{suffix}", False),
-                config.get(f"time_override_{i}_start{suffix}", "00:00:00"),
-                config.get(f"time_override_{i}_end{suffix}", "00:00:00"),
-                config.get(f"time_override_{i}_mode{suffix}", "charge"),
-            ])
+        calc_values.extend([
+            config.get(f"time_override_enabled{suffix}", False),
+            config.get(f"time_override_start{suffix}", "00:00:00"),
+            config.get(f"time_override_end{suffix}", "00:00:00"),
+            config.get(f"time_override_mode{suffix}", "charge"),
+        ])
 
         # Create hash from all values
         return str(hash(tuple(str(v) for v in calc_values)))

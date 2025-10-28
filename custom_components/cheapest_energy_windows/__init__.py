@@ -123,10 +123,18 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Clean up domain data
         hass.data[DOMAIN].pop(entry.entry_id)
 
+        # Clean up persistent coordinator state
+        persistent_key = f"{DOMAIN}_{entry.entry_id}_price_state"
+        if persistent_key in hass.data:
+            hass.data.pop(persistent_key)
+            _LOGGER.info("Cleared persistent coordinator state")
+
         # Clean up services if this was the last instance
         if not hass.data[DOMAIN]:
-            # TODO: Unregister services
-            pass
+            # Unregister services
+            hass.services.async_remove(DOMAIN, "rotate_tomorrow_settings")
+            hass.services.async_remove(DOMAIN, "trigger_battery_action")
+            _LOGGER.info("Services unregistered successfully")
 
     return unload_ok
 
